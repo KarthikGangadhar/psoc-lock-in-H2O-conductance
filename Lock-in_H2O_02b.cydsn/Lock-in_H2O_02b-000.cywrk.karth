@@ -13,7 +13,7 @@
 <v>Output</v>
 </TreeKeys>
 <TreeStates>
-<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="Lock-in_H2O_02b-000\Lock-in_H2O_02b\Lock-in_H2O_02b.cydwr\Pins">
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="Lock-in_H2O_02b-000\Lock-in_H2O_02b\TopDesign">
 <ExpandedNodeIds>
 <v>Lock-in_H2O_02b-000</v>
 <v>Lock-in_H2O_02b-000\Lock-in_H2O_02b</v>
@@ -70,9 +70,6 @@
 <v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\Generated_Source\PSoC5\cy_boot</v>
 <v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\Generated_Source\PSoC5\Em_EEPROM_Dynamic</v>
 <v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\Generated_Source\PSoC5\Filter_1</v>
-<v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\Generated_Source\PSoC5\isrADC</v>
-<v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\Generated_Source\PSoC5\Pin_152</v>
-<v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\Generated_Source\PSoC5\Pin_153</v>
 </VisibleNodeIds>
 </CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
 <CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="">
@@ -176,9 +173,6 @@
 <v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\CortexM3\ARM_GCC_541\Debug\Listing Files\Filter_1.lst</v>
 <v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\CortexM3\ARM_GCC_541\Debug\Listing Files\isrADC.lst</v>
 <v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\CortexM3\ARM_GCC_541\Debug\Listing Files\main.lst</v>
-<v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\CortexM3\ARM_GCC_541\Debug\Listing Files\Pin_152.lst</v>
-<v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\CortexM3\ARM_GCC_541\Debug\Listing Files\Pin_153.lst</v>
-<v>Lock-in_H2O_02b-000\Lock-in_H2O_02b\CortexM3\ARM_GCC_541\Debug\Listing Files\Pin_34.lst</v>
 </VisibleNodeIds>
 </CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
 </TreeStates>

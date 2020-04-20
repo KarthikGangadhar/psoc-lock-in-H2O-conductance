@@ -2,7 +2,7 @@
 --	Conversion of Lock-in_H2O_02b.v to vh2:
 --
 --	Cypress Semiconductor - WARP Version 6.3 IR 41
---	Mon Apr 20 02:10:28 2020
+--	Mon Apr 20 02:30:49 2020
 --
 
 USE cypress.cypress.all;
@@ -12,8 +12,8 @@ ATTRIBUTE part_name of top_RTL:TYPE IS "cpsoc3";
 END top_RTL;
 --------------------------------------------------------
 ARCHITECTURE R_T_L OF top_RTL IS
-TERMINAL Net_461 : bit;
-TERMINAL Net_284 : bit;
+TERMINAL Net_536 : bit;
+TERMINAL Net_597 : bit;
 TERMINAL Net_518 : bit;
 TERMINAL Net_469 : bit;
 SIGNAL tmpOE__Pin_LED_net_0 : bit;
@@ -91,61 +91,60 @@ SIGNAL \ADC_1:soc\ : bit;
 SIGNAL \ADC_1:Net_252\ : bit;
 SIGNAL \ADC_1:Net_268\ : bit;
 SIGNAL \ADC_1:Net_270\ : bit;
-TERMINAL Net_385 : bit;
-TERMINAL Net_386 : bit;
-TERMINAL Net_387 : bit;
-TERMINAL Net_388 : bit;
-TERMINAL Net_389 : bit;
-TERMINAL Net_390 : bit;
-TERMINAL Net_391 : bit;
-TERMINAL Net_365 : bit;
-TERMINAL Net_425 : bit;
-TERMINAL Net_424 : bit;
-TERMINAL Net_423 : bit;
-TERMINAL Net_411 : bit;
-TERMINAL Net_412 : bit;
-TERMINAL Net_413 : bit;
-TERMINAL Net_414 : bit;
-TERMINAL Net_415 : bit;
-TERMINAL Net_416 : bit;
-TERMINAL Net_417 : bit;
+TERMINAL Net_537 : bit;
+TERMINAL Net_538 : bit;
+TERMINAL Net_539 : bit;
+TERMINAL Net_540 : bit;
+TERMINAL Net_541 : bit;
+TERMINAL Net_542 : bit;
+TERMINAL Net_543 : bit;
+TERMINAL Net_578 : bit;
+TERMINAL Net_577 : bit;
+TERMINAL Net_576 : bit;
+TERMINAL Net_565 : bit;
+TERMINAL Net_566 : bit;
+TERMINAL Net_567 : bit;
+TERMINAL Net_568 : bit;
+TERMINAL Net_569 : bit;
+TERMINAL Net_570 : bit;
+TERMINAL Net_571 : bit;
 TERMINAL Net_171 : bit;
-TERMINAL Net_422 : bit;
-TERMINAL Net_421 : bit;
-TERMINAL Net_420 : bit;
-TERMINAL Net_392 : bit;
-TERMINAL Net_393 : bit;
+TERMINAL Net_575 : bit;
+TERMINAL Net_574 : bit;
+TERMINAL Net_573 : bit;
+TERMINAL Net_544 : bit;
+TERMINAL Net_545 : bit;
 TERMINAL Net_379 : bit;
 TERMINAL Net_367 : bit;
-TERMINAL Net_394 : bit;
-TERMINAL Net_395 : bit;
-TERMINAL Net_419 : bit;
-TERMINAL Net_410 : bit;
-TERMINAL Net_409 : bit;
-TERMINAL Net_408 : bit;
-TERMINAL Net_407 : bit;
-TERMINAL Net_406 : bit;
-TERMINAL Net_405 : bit;
-TERMINAL Net_404 : bit;
-TERMINAL Net_403 : bit;
-TERMINAL Net_396 : bit;
-TERMINAL Net_397 : bit;
-TERMINAL Net_398 : bit;
-TERMINAL Net_191 : bit;
-TERMINAL Net_380 : bit;
-TERMINAL Net_429 : bit;
-TERMINAL Net_430 : bit;
-TERMINAL Net_431 : bit;
-TERMINAL Net_432 : bit;
-TERMINAL Net_433 : bit;
-TERMINAL Net_401 : bit;
-TERMINAL Net_427 : bit;
-TERMINAL Net_399 : bit;
-TERMINAL Net_400 : bit;
-TERMINAL Net_402 : bit;
-TERMINAL Net_426 : bit;
-TERMINAL Net_428_1 : bit;
-TERMINAL Net_428_0 : bit;
+TERMINAL Net_546 : bit;
+TERMINAL Net_547 : bit;
+TERMINAL Net_572 : bit;
+TERMINAL Net_564 : bit;
+TERMINAL Net_563 : bit;
+TERMINAL Net_562 : bit;
+TERMINAL Net_561 : bit;
+TERMINAL Net_560 : bit;
+TERMINAL Net_559 : bit;
+TERMINAL Net_558 : bit;
+TERMINAL Net_557 : bit;
+TERMINAL Net_548 : bit;
+TERMINAL Net_549 : bit;
+TERMINAL Net_550 : bit;
+TERMINAL Net_461 : bit;
+TERMINAL Net_552 : bit;
+TERMINAL Net_582 : bit;
+TERMINAL Net_583 : bit;
+TERMINAL Net_584 : bit;
+TERMINAL Net_585 : bit;
+TERMINAL Net_586 : bit;
+TERMINAL Net_555 : bit;
+TERMINAL Net_580 : bit;
+TERMINAL Net_553 : bit;
+TERMINAL Net_554 : bit;
+TERMINAL Net_556 : bit;
+TERMINAL Net_579 : bit;
+TERMINAL Net_581_1 : bit;
+TERMINAL Net_581_0 : bit;
 SIGNAL Net_104 : bit;
 SIGNAL \UART_1:Net_61\ : bit;
 SIGNAL Net_436 : bit;
@@ -272,19 +271,20 @@ SIGNAL tmpFB_0__Pin_153_net_0 : bit;
 SIGNAL tmpIO_0__Pin_153_net_0 : bit;
 TERMINAL tmpSIOVREF__Pin_153_net_0 : bit;
 SIGNAL tmpINTERRUPT_0__Pin_153_net_0 : bit;
-TERMINAL Net_474 : bit;
-TERMINAL Net_472_1 : bit;
-TERMINAL Net_472_0 : bit;
-TERMINAL Net_475_1 : bit;
-TERMINAL Net_475_0 : bit;
-TERMINAL Net_470 : bit;
-TERMINAL Net_473 : bit;
+TERMINAL Net_590 : bit;
+TERMINAL Net_588_1 : bit;
+TERMINAL Net_588_0 : bit;
+TERMINAL Net_591_1 : bit;
+TERMINAL Net_591_0 : bit;
+TERMINAL Net_587 : bit;
+TERMINAL Net_589 : bit;
 TERMINAL Net_16205 : bit;
 TERMINAL Net_16198 : bit;
-TERMINAL Net_484 : bit;
-TERMINAL Net_485 : bit;
-TERMINAL Net_486 : bit;
-TERMINAL Net_487 : bit;
+TERMINAL Net_607 : bit;
+TERMINAL Net_603 : bit;
+TERMINAL Net_604 : bit;
+TERMINAL Net_605 : bit;
+TERMINAL Net_606 : bit;
 SIGNAL \UART_1:BUART:reset_reg\\D\ : bit;
 SIGNAL \UART_1:BUART:txn\\D\ : bit;
 SIGNAL \UART_1:BUART:tx_state_1\\D\ : bit;
@@ -356,7 +356,7 @@ R_3:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"Resistor_sm1_v1_0",
 		port_names=>"T1, T2",
 		width=>2)
-	PORT MAP(connect=>(Net_461, Net_284));
+	PORT MAP(connect=>(Net_536, Net_597));
 D_1:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"LED_v1_0",
 		port_names=>"A, K",
@@ -843,21 +843,21 @@ KIT_059_1:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"KIT_059_v1_0",
 		port_names=>"P_00, P_01, P_02, P_03, P_04, P_05, P_06, P_07, P_10, P_11, P_12, P_120, P_121, P_122, P_123, P_124, P_125, P_126, P_127, P_13, P_14, P_15, P_150, P_151, P_152, P_153, P_154, P_155, P_16, P_17, P_20, P_21, P_22, P_23, P_24, P_25, P_26, P_27, P_30, P_31, P_32, P_33, P_34, P_35, P_36, P_37, P_59, P_60, P_61, P_62, P_63, P_GND_0, P_GND_1, P_GND_3, P_RST_0, P_VDD_0, P_VDDIO, USB_1_1, USB_1_0",
 		width=>59)
-	PORT MAP(connect=>(Net_385, Net_386, Net_387, Net_388,
-			Net_389, Net_390, Net_391, Net_365,
-			Net_425, Net_424, Net_423, Net_411,
-			Net_412, Net_413, Net_414, Net_415,
-			Net_416, Net_417, Net_171, Net_422,
-			Net_421, Net_420, Net_392, Net_393,
-			Net_379, Net_367, Net_394, Net_395,
-			Net_419, Net_418, Net_410, Net_409,
-			Net_408, Net_407, Net_406, Net_405,
-			Net_404, Net_403, Net_396, Net_397,
-			Net_292, Net_398, Net_290, Net_461,
-			Net_191, Net_380, Net_429, Net_430,
-			Net_431, Net_432, Net_433, Net_401,
-			Net_427, Net_399, Net_400, Net_402,
-			Net_426, Net_428_1, Net_428_0));
+	PORT MAP(connect=>(Net_536, Net_537, Net_538, Net_539,
+			Net_540, Net_541, Net_542, Net_543,
+			Net_578, Net_577, Net_576, Net_565,
+			Net_566, Net_567, Net_568, Net_569,
+			Net_570, Net_571, Net_171, Net_575,
+			Net_574, Net_573, Net_544, Net_545,
+			Net_379, Net_367, Net_546, Net_547,
+			Net_572, Net_418, Net_564, Net_563,
+			Net_562, Net_561, Net_560, Net_559,
+			Net_558, Net_557, Net_548, Net_549,
+			Net_292, Net_550, Net_290, Net_461,
+			Net_379, Net_552, Net_582, Net_583,
+			Net_584, Net_585, Net_586, Net_555,
+			Net_580, Net_553, Net_554, Net_556,
+			Net_579, Net_581_1, Net_581_0));
 \UART_1:TXInternalInterrupt\:cy_isr_v1_0
 	GENERIC MAP(int_type=>"10",
 		is_nmi=>'0')
@@ -1147,7 +1147,7 @@ DelSig_1:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"DelSig_sm1_v1_0",
 		port_names=>"T2_1, T2_3, T2_4",
 		width=>3)
-	PORT MAP(connect=>(Net_292, Net_461, Net_290));
+	PORT MAP(connect=>(Net_292, Net_536, Net_290));
 GND_3:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"Gnd_v1_0",
 		port_names=>"T1",
@@ -1302,8 +1302,8 @@ SerialPlot_1:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"SerialPlot_sm1_v0_0",
 		port_names=>"RX_1, RX_2, Rx1_1_1, Rx1_1_0, Rx1_2_1, Rx1_2_0, TX_1, TX_2",
 		width=>8)
-	PORT MAP(connect=>(Net_171, Net_474, Net_472_1, Net_472_0,
-			Net_475_1, Net_475_0, Net_470, Net_473));
+	PORT MAP(connect=>(Net_171, Net_590, Net_588_1, Net_588_0,
+			Net_591_1, Net_591_0, Net_587, Net_589));
 SW_1:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"Button_sw_wide_v0_0",
 		port_names=>"T1, T2",
@@ -1328,8 +1328,8 @@ P_1:cy_annotation_universal_v1_0
 	GENERIC MAP(comp_name=>"Connector_sm1_v0_0",
 		port_names=>"P_120, P_121, P_122, P_123, P_124, P_125, P_126, P_127",
 		width=>8)
-	PORT MAP(connect=>(Net_379, Net_144, Net_284, Net_367,
-			Net_484, Net_485, Net_486, Net_487));
+	PORT MAP(connect=>(Net_379, Net_144, Net_597, Net_607,
+			Net_603, Net_604, Net_605, Net_606));
 \UART_1:BUART:reset_reg\:cy_dff
 	PORT MAP(d=>zero,
 		clk=>\UART_1:BUART:clock_op\,

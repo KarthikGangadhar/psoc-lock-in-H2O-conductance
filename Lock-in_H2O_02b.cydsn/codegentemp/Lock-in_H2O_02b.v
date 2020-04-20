@@ -1,6 +1,6 @@
 // ======================================================================
 // Lock-in_H2O_02b.v generated from TopDesign.cysch
-// 04/20/2020 at 02:10
+// 04/20/2020 at 02:30
 // This file is auto generated. ANY EDITS YOU MAKE MAY BE LOST WHEN THIS FILE IS REGENERATED!!!
 // ======================================================================
 
@@ -652,18 +652,19 @@ endmodule
 // top
 module top ;
 
-    electrical  Net_487;
-    electrical  Net_486;
-    electrical  Net_485;
-    electrical  Net_484;
-          wire  Net_478;
-    electrical [1:0] Net_475;
-    electrical  Net_474;
-    electrical  Net_473;
-    electrical [1:0] Net_472;
-    electrical  Net_470;
-          wire  Net_521;
     electrical  mod_n;
+    electrical  Net_606;
+    electrical  Net_605;
+    electrical  Net_604;
+    electrical  Net_603;
+    electrical  Net_607;
+          wire  Net_478;
+    electrical [1:0] Net_591;
+    electrical  Net_590;
+    electrical  Net_589;
+    electrical [1:0] Net_588;
+    electrical  Net_587;
+          wire  Net_521;
           wire  Net_114;
           wire  Net_111;
           wire  Net_113;
@@ -674,69 +675,73 @@ module top ;
           wire  Net_116;
           wire  Net_104;
           wire  Net_115;
+    electrical  mod_p;
           wire  Net_102;
           wire  Net_101;
           wire  Net_100;
           wire  Net_99;
           wire  Net_98;
-    electrical  Net_433;
-    electrical  Net_432;
-    electrical  Net_431;
-    electrical  Net_430;
-    electrical  Net_429;
-    electrical [1:0] Net_428;
-    electrical  Net_427;
-    electrical  Net_426;
-    electrical  Net_425;
-    electrical  Net_424;
-    electrical  Net_423;
-    electrical  Net_422;
-    electrical  Net_421;
-    electrical  Net_420;
-    electrical  Net_419;
-    electrical  Net_417;
-    electrical  Net_416;
-    electrical  Net_415;
-    electrical  Net_414;
-    electrical  Net_413;
-    electrical  Net_412;
-    electrical  Net_411;
-    electrical  Net_410;
-    electrical  Net_409;
-    electrical  Net_408;
-    electrical  Net_407;
-    electrical  Net_406;
-    electrical  Net_405;
-    electrical  Net_404;
-    electrical  Net_403;
-    electrical  Net_402;
-    electrical  Net_401;
-    electrical  Net_400;
-    electrical  Net_399;
-    electrical  Net_380;
-    electrical  Net_191;
-    electrical  Net_398;
-    electrical  Net_397;
-    electrical  Net_396;
-    electrical  Net_395;
-    electrical  Net_394;
-    electrical  Net_393;
-    electrical  Net_392;
-    electrical  Net_365;
-    electrical  Net_391;
-    electrical  Net_390;
-    electrical  Net_389;
-    electrical  Net_388;
-    electrical  Net_387;
-    electrical  Net_386;
-    electrical  Net_385;
+    electrical  Net_586;
+    electrical  Net_585;
+    electrical  Net_584;
+    electrical  Net_583;
+    electrical  Net_582;
+    electrical [1:0] Net_581;
+    electrical  Net_580;
+    electrical  Net_579;
+    electrical  Net_578;
+    electrical  Net_577;
+    electrical  Net_576;
+    electrical  Net_575;
+          wire  mod1;
+    electrical  Net_574;
+    electrical  Net_573;
+    electrical  Net_572;
+    electrical  Net_571;
+    electrical  Net_570;
+    electrical  Net_569;
+    electrical  Net_568;
+    electrical  Net_567;
+    electrical  Net_566;
+    electrical  Net_565;
+    electrical  Net_564;
+    electrical  Net_563;
+    electrical  Net_562;
+    electrical  Net_561;
+    electrical  Net_560;
+    electrical  Net_559;
+    electrical  Net_558;
+    electrical  Net_557;
+    electrical  Net_556;
+    electrical  Net_555;
+    electrical  Net_554;
+    electrical  Net_553;
+    electrical  Net_552;
+    electrical  Net_461;
+    electrical  Net_550;
+    electrical  Net_549;
+    electrical  Net_548;
+    electrical  Net_547;
+    electrical  Net_546;
+    electrical  Net_367;
+    electrical  Net_545;
+    electrical  Net_544;
+    electrical  Net_543;
+    electrical  Net_542;
+    electrical  Net_541;
+    electrical  Net_540;
+    electrical  Net_539;
+    electrical  Net_538;
+    electrical  Net_537;
     electrical  Net_464;
           wire  Net_463;
           wire  Net_462;
     electrical  Net_469;
+    electrical  Net_379;
+    electrical  Net_597;
+    electrical  Net_536;
     electrical  Net_534;
     electrical  Net_171;
-    electrical  mod_p;
     electrical  Net_418;
     electrical  Net_292;
     electrical  Net_235;
@@ -746,22 +751,17 @@ module top ;
     electrical  Net_97;
     electrical  Net_989;
     electrical  Net_144;
-    electrical  Net_284;
-    electrical  Net_461;
     electrical  Net_290;
-    electrical  Net_367;
-    electrical  Net_379;
           wire  Net_15947;
     electrical  Net_16205;
     electrical  Net_16198;
     electrical  Net_518;
-          wire  mod1;
           wire  Net_436;
 
     cy_annotation_universal_v1_0 R_3 (
         .connect({
-            Net_461,
-            Net_284
+            Net_536,
+            Net_597
         })
     );
     defparam R_3.comp_name = "Resistor_sm1_v1_0";
@@ -1088,64 +1088,64 @@ module top ;
 
     cy_annotation_universal_v1_0 KIT_059_1 (
         .connect({
-            Net_385,
-            Net_386,
-            Net_387,
-            Net_388,
-            Net_389,
-            Net_390,
-            Net_391,
-            Net_365,
-            Net_425,
-            Net_424,
-            Net_423,
-            Net_411,
-            Net_412,
-            Net_413,
-            Net_414,
-            Net_415,
-            Net_416,
-            Net_417,
+            Net_536,
+            Net_537,
+            Net_538,
+            Net_539,
+            Net_540,
+            Net_541,
+            Net_542,
+            Net_543,
+            Net_578,
+            Net_577,
+            Net_576,
+            Net_565,
+            Net_566,
+            Net_567,
+            Net_568,
+            Net_569,
+            Net_570,
+            Net_571,
             Net_171,
-            Net_422,
-            Net_421,
-            Net_420,
-            Net_392,
-            Net_393,
+            Net_575,
+            Net_574,
+            Net_573,
+            Net_544,
+            Net_545,
             Net_379,
             Net_367,
-            Net_394,
-            Net_395,
-            Net_419,
+            Net_546,
+            Net_547,
+            Net_572,
             Net_418,
-            Net_410,
-            Net_409,
-            Net_408,
-            Net_407,
-            Net_406,
-            Net_405,
-            Net_404,
-            Net_403,
-            Net_396,
-            Net_397,
+            Net_564,
+            Net_563,
+            Net_562,
+            Net_561,
+            Net_560,
+            Net_559,
+            Net_558,
+            Net_557,
+            Net_548,
+            Net_549,
             Net_292,
-            Net_398,
+            Net_550,
             Net_290,
             Net_461,
-            Net_191,
-            Net_380,
-            Net_429,
-            Net_430,
-            Net_431,
-            Net_432,
-            Net_433,
-            Net_401,
-            Net_427,
-            Net_399,
-            Net_400,
-            Net_402,
-            Net_426,
-            Net_428[1:0]
+            Net_379,
+            Net_552,
+            Net_582,
+            Net_583,
+            Net_584,
+            Net_585,
+            Net_586,
+            Net_555,
+            Net_580,
+            Net_553,
+            Net_554,
+            Net_556,
+            Net_579,
+            Net_581[1:0]
         })
     );
     defparam KIT_059_1.comp_name = "KIT_059_v1_0";
@@ -1290,7 +1290,7 @@ module top ;
     cy_annotation_universal_v1_0 DelSig_1 (
         .connect({
             Net_292,
-            Net_461,
+            Net_536,
             Net_290
         })
     );
@@ -1474,11 +1474,11 @@ module top ;
     cy_annotation_universal_v1_0 SerialPlot_1 (
         .connect({
             Net_171,
-            Net_474,
-            Net_472[1:0],
-            Net_475[1:0],
-            Net_470,
-            Net_473
+            Net_590,
+            Net_588[1:0],
+            Net_591[1:0],
+            Net_587,
+            Net_589
         })
     );
     defparam SerialPlot_1.comp_name = "SerialPlot_sm1_v0_0";
@@ -1520,12 +1520,12 @@ module top ;
         .connect({
             Net_379,
             Net_144,
-            Net_284,
-            Net_367,
-            Net_484,
-            Net_485,
-            Net_486,
-            Net_487
+            Net_597,
+            Net_607,
+            Net_603,
+            Net_604,
+            Net_605,
+            Net_606
         })
     );
     defparam P_1.comp_name = "Connector_sm1_v0_0";
