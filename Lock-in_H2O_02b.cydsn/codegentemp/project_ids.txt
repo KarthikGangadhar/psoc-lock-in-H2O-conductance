@@ -1,0 +1,11 @@
+C:\Users\karth\Downloads\conductometry\psoc-lock-in-H2O-conductance\Lock-in_H2O_02b.cydsn\Lock-in_H2O_02b.cyprj|9da7f01a-e3aa-41e7-a750-c15f705cc95b
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\default\CyAnnotationLibrary\CyAnnotationLibrary.cylib\CyAnnotationLibrary.cyprj|ea37de71-8cb8-4d15-bb76-21e4b480c45a
+C:\Users\karth\Documents\PSoC Creator\4.2\Downloads ( 4.2).cylib\Downloads ( 4.2).cyprj|428700e8-99b9-41ce-aaf7-b0ec6a1262d8
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\cycomponentlibraryupdates\CyComponentLibraryUpdates.cylib\CyComponentLibraryUpdates.cyprj|aebc07a8-4b8f-48c2-9f13-62ae57d2bc9e
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\cycomponentlibrary\CyComponentLibrary.cylib\CyComponentLibrary.cyprj|a122a044-89ad-420f-b9aa-b1842c6d5234
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\cyprimitives\CyPrimitives.cylib\CyPrimitives.cyprj|85640815-5cdd-49ce-af59-f3cdd54fe24f
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\default\CyReferenceLibrary\CyReferenceLibrary.cylib\CyReferenceLibrary.cyprj|aa02a181-766c-49b0-aa9a-cc73e31f4b1c
+C:\Users\karth\Downloads\conductometry\psoc-setup-libraries\psoc-serial-plot\SerialPlot_lib\SerialPlot_lib.cylib\SerialPlot_lib.cyprj|1f2c616a-f121-41db-9fea-c81bbdd77d06
+C:\Users\karth\Downloads\conductometry\psoc-setup-libraries\psoc-median-filter\MedianFilter_lib\MedianFilter_lib.cylib\MedianFilter_lib.cyprj|81040bd7-991e-4ea3-990f-ede4d2bdc333
+C:\Users\karth\Downloads\conductometry\psoc-setup-libraries\psoc-botton-switch\ButtonSw32_lib\ButtonSw32_lib.cylib\ButtonSw32_lib.cyprj|25393188-5573-4f09-8263-8bf155dca358
+C:\Users\karth\Downloads\conductometry\psoc-setup-libraries\psoc-annotation-library\AnnotationLibrary\AnnotationLibrary_lib\AnnotationLibrary_lib.cylib\AnnotationLibrary_lib.cyprj|cf8f8cf0-0edc-4d6b-b09e-9595c58e5325

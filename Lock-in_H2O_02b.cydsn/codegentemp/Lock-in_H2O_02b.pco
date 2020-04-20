@@ -1,0 +1,38 @@
+# Lock-in_H2O_02b
+# 2020-04-20 07:10:29Z
+
+# IO_0@[IOP=(1)][IoId=(0)] is reserved: SWDDebugEnabled
+dont_use_io iocell 1 0
+# IO_1@[IOP=(1)][IoId=(1)] is reserved: SWDDebugEnabled
+dont_use_io iocell 1 1
+# IO_3@[IOP=(1)][IoId=(3)] is reserved: SWDDebugEnabled
+dont_use_io iocell 1 3
+set_location "ClockBlock" clockblockcell -1 -1 0
+set_io "Pin_LED(0)" iocell 2 1
+set_io "\Button_1:REG_0(0)\" iocell 1 7
+set_io "Pin_34(0)" iocell 3 4
+set_io "Pin_35(0)" iocell 3 5
+set_io "\ADC_1:Bypass_P32(0)\" iocell 3 2
+set_io "Pin_Tx(0)" iocell 12 7
+set_io "Pin_152(0)" iocell 15 2
+set_io "Pin_153(0)" iocell 15 3
+set_location "Net_99" 3 0 0 2
+set_location "\UART_1:BUART:counter_load_not\" 2 0 1 1
+set_location "\UART_1:BUART:tx_status_0\" 3 0 0 1
+set_location "\UART_1:BUART:tx_status_2\" 3 0 0 3
+set_location "Net_128" 3 0 1 0
+set_location "\Button_1:isrPoll\" interrupt -1 -1 0
+set_location "\ADC_1:DSM\" dsmodcell -1 -1 0
+set_location "\ADC_1:IRQ\" interrupt -1 -1 29
+set_location "\ADC_1:DEC\" decimatorcell -1 -1 0
+set_location "__ONE__" 2 0 0 2
+set_location "\UART_1:TXInternalInterrupt\" interrupt -1 -1 1
+set_location "\UART_1:BUART:sTX:TxShifter:u0\" 3 0 2
+set_location "\UART_1:BUART:sTX:sCLOCK:TxBitClkGen\" 2 0 2
+set_location "\UART_1:BUART:sTX:TxSts\" 3 0 4
+set_location "isrADC" interrupt -1 -1 2
+set_location "\UART_1:BUART:txn\" 2 0 0 0
+set_location "\UART_1:BUART:tx_state_1\" 2 0 0 1
+set_location "\UART_1:BUART:tx_state_0\" 3 0 0 0
+set_location "\UART_1:BUART:tx_state_2\" 2 0 1 0
+set_location "\UART_1:BUART:tx_bitclk\" 2 0 1 2

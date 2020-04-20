@@ -1,0 +1,1217 @@
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 1
+
+
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"Filter_1.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Filter_1_AddValue,"ax",%progbits
+  20              		.align	2
+  21              		.global	Filter_1_AddValue
+  22              		.thumb
+  23              		.thumb_func
+  24              		.type	Filter_1_AddValue, %function
+  25              	Filter_1_AddValue:
+  26              	.LFB63:
+  27              		.file 1 "Generated_Source\\PSoC5\\Filter_1.c"
+   1:Generated_Source\PSoC5/Filter_1.c **** /* ============================================================================
+   2:Generated_Source\PSoC5/Filter_1.c ****  * Component Name: MedianFilter_v0_0
+   3:Generated_Source\PSoC5/Filter_1.c ****  *
+   4:Generated_Source\PSoC5/Filter_1.c ****  * Description:
+   5:Generated_Source\PSoC5/Filter_1.c ****  *   Fast Median Filter component implementation for streamed data
+   6:Generated_Source\PSoC5/Filter_1.c ****  *   Range: int8, int16, int32, uint8, uint16, uin32
+   7:Generated_Source\PSoC5/Filter_1.c ****  *   Has has fixed execution time: 86 + N * 26; N-filter size
+   8:Generated_Source\PSoC5/Filter_1.c ****  *
+   9:Generated_Source\PSoC5/Filter_1.c ****  * Credits:
+  10:Generated_Source\PSoC5/Filter_1.c ****  *   Phil Ekstrom median filtering algorithm:
+  11:Generated_Source\PSoC5/Filter_1.c ****  *   https://www.embedded.com/better-than-average/
+  12:Generated_Source\PSoC5/Filter_1.c ****  *   https://embeddedgurus.com/stack-overflow/2010/10/median-filtering/  (code borrowed from here)
+  13:Generated_Source\PSoC5/Filter_1.c ****  *
+  14:Generated_Source\PSoC5/Filter_1.c ****  * Uses:
+  15:Generated_Source\PSoC5/Filter_1.c ****  *   Serial PLOT v0.10.0
+  16:Generated_Source\PSoC5/Filter_1.c ****  *   by Yavuz Ozderya
+  17:Generated_Source\PSoC5/Filter_1.c ****  *   https://hasanyavuz.ozderya.net/?p=244
+  18:Generated_Source\PSoC5/Filter_1.c ****  *   https://bitbucket.org/hyOzd/serialplot   
+  19:Generated_Source\PSoC5/Filter_1.c ****  *
+  20:Generated_Source\PSoC5/Filter_1.c ****  * ============================================================================
+  21:Generated_Source\PSoC5/Filter_1.c ****  * PROVIDED AS-IS, NO WARRANTY OF ANY KIND, INCLUDING, BUT NOT LIMITED TO, THE
+  22:Generated_Source\PSoC5/Filter_1.c ****  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  23:Generated_Source\PSoC5/Filter_1.c ****  * FREE TO SHARE, USE AND MODIFY UNDER TERMS: CREATIVE COMMONS - SHARE ALIKE
+  24:Generated_Source\PSoC5/Filter_1.c ****  * ============================================================================
+  25:Generated_Source\PSoC5/Filter_1.c **** */
+  26:Generated_Source\PSoC5/Filter_1.c **** 
+  27:Generated_Source\PSoC5/Filter_1.c **** 
+  28:Generated_Source\PSoC5/Filter_1.c **** #include <Filter_1.h> // must specify API prefix in Symbol->Properties->Doc.APIPrefix
+  29:Generated_Source\PSoC5/Filter_1.c **** 
+  30:Generated_Source\PSoC5/Filter_1.c **** 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 2
+
+
+  31:Generated_Source\PSoC5/Filter_1.c **** //====================================
+  32:Generated_Source\PSoC5/Filter_1.c **** //        read-only parameters
+  33:Generated_Source\PSoC5/Filter_1.c **** //====================================
+  34:Generated_Source\PSoC5/Filter_1.c **** 
+  35:Generated_Source\PSoC5/Filter_1.c **** #define FilterSize  (21)    // Filter length  
+  36:Generated_Source\PSoC5/Filter_1.c **** #define STOPPER     ((int32_t) 0x80000000)       // STOPPER must be smaller than any datum, -128(in
+  37:Generated_Source\PSoC5/Filter_1.c **** 
+  38:Generated_Source\PSoC5/Filter_1.c **** 
+  39:Generated_Source\PSoC5/Filter_1.c **** //====================================
+  40:Generated_Source\PSoC5/Filter_1.c **** //        private variables
+  41:Generated_Source\PSoC5/Filter_1.c **** //====================================
+  42:Generated_Source\PSoC5/Filter_1.c **** 
+  43:Generated_Source\PSoC5/Filter_1.c **** 
+  44:Generated_Source\PSoC5/Filter_1.c **** 
+  45:Generated_Source\PSoC5/Filter_1.c **** //==============================================================================
+  46:Generated_Source\PSoC5/Filter_1.c **** // Median filter. Input: next data value; output: filtered data 
+  47:Generated_Source\PSoC5/Filter_1.c **** //==============================================================================
+  48:Generated_Source\PSoC5/Filter_1.c **** int32 Filter_1_AddValue(int32 datum)
+  49:Generated_Source\PSoC5/Filter_1.c **** {
+  28              		.loc 1 49 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33              	.LVL0:
+  34 0000 F0B4     		push	{r4, r5, r6, r7}
+  35              		.cfi_def_cfa_offset 16
+  36              		.cfi_offset 4, -16
+  37              		.cfi_offset 5, -12
+  38              		.cfi_offset 6, -8
+  39              		.cfi_offset 7, -4
+  50:Generated_Source\PSoC5/Filter_1.c ****     
+  51:Generated_Source\PSoC5/Filter_1.c ****     struct pair
+  52:Generated_Source\PSoC5/Filter_1.c ****     {
+  53:Generated_Source\PSoC5/Filter_1.c ****         struct pair *point;                                 // Pointers forming list linked in sort
+  54:Generated_Source\PSoC5/Filter_1.c ****         int32   value;                                 // Values to sort 
+  55:Generated_Source\PSoC5/Filter_1.c ****     };
+  56:Generated_Source\PSoC5/Filter_1.c ****  
+  57:Generated_Source\PSoC5/Filter_1.c ****     static struct pair buffer[FilterSize]={};               // Buffer of nwidth pairs 
+  58:Generated_Source\PSoC5/Filter_1.c ****     static struct pair *datpoint = buffer;                  // Pointer into circular buffer of data
+  59:Generated_Source\PSoC5/Filter_1.c ****     static struct pair small = {NULL, STOPPER};             // Chain stopper 
+  60:Generated_Source\PSoC5/Filter_1.c ****     static struct pair big = {&small, 0};                   // Pointer to head (largest) of linked 
+  61:Generated_Source\PSoC5/Filter_1.c ****    
+  62:Generated_Source\PSoC5/Filter_1.c ****     struct pair *successor;                                 // Pointer to successor of replaced dat
+  63:Generated_Source\PSoC5/Filter_1.c ****     struct pair *scan;                                      // Pointer used to scan down the sorted
+  64:Generated_Source\PSoC5/Filter_1.c ****     struct pair *scanold;                                   // Previous value of scan 
+  65:Generated_Source\PSoC5/Filter_1.c ****     struct pair *median;                                    // Pointer to median 
+  66:Generated_Source\PSoC5/Filter_1.c ****     
+  67:Generated_Source\PSoC5/Filter_1.c **** 
+  68:Generated_Source\PSoC5/Filter_1.c ****     if (datum == STOPPER) { datum =  STOPPER + 1; }         // No stoppers allowed.   
+  40              		.loc 1 68 0
+  41 0002 B0F1004F 		cmp	r0, #-2147483648
+  42 0006 00D1     		bne	.L2
+  43 0008 0130     		adds	r0, r0, #1
+  44              	.LVL1:
+  45              	.L2:
+  69:Generated_Source\PSoC5/Filter_1.c **** 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 3
+
+
+  70:Generated_Source\PSoC5/Filter_1.c ****     if ( (++datpoint - buffer) >= FilterSize) {
+  46              		.loc 1 70 0
+  47 000a 204A     		ldr	r2, .L14
+  48 000c 9368     		ldr	r3, [r2, #8]
+  49 000e 0833     		adds	r3, r3, #8
+  50 0010 9360     		str	r3, [r2, #8]
+  51 0012 1F4A     		ldr	r2, .L14+4
+  52 0014 9B1A     		subs	r3, r3, r2
+  53 0016 A72B     		cmp	r3, #167
+  54 0018 01DD     		ble	.L3
+  71:Generated_Source\PSoC5/Filter_1.c ****         datpoint = buffer;                                  // Increment and wrap data in pointer.
+  55              		.loc 1 71 0
+  56 001a 1C4B     		ldr	r3, .L14
+  57 001c 9A60     		str	r2, [r3, #8]
+  58              	.L3:
+  72:Generated_Source\PSoC5/Filter_1.c ****     }
+  73:Generated_Source\PSoC5/Filter_1.c **** 
+  74:Generated_Source\PSoC5/Filter_1.c ****     datpoint->value = datum;                                // Copy in new datum 
+  59              		.loc 1 74 0
+  60 001e 1B4B     		ldr	r3, .L14
+  61 0020 9D68     		ldr	r5, [r3, #8]
+  62 0022 6860     		str	r0, [r5, #4]
+  75:Generated_Source\PSoC5/Filter_1.c ****     successor = datpoint->point;                            // Save pointer to old value's successo
+  63              		.loc 1 75 0
+  64 0024 2F68     		ldr	r7, [r5]
+  65              	.LVL2:
+  76:Generated_Source\PSoC5/Filter_1.c ****     median = &big;                                          // Median initially to first in chain 
+  77:Generated_Source\PSoC5/Filter_1.c ****     scanold = NULL;                                         // Scanold initially null. 
+  78:Generated_Source\PSoC5/Filter_1.c ****     scan = &big;                                            // Points to pointer to first (largest)
+  79:Generated_Source\PSoC5/Filter_1.c **** 
+  80:Generated_Source\PSoC5/Filter_1.c ****     
+  81:Generated_Source\PSoC5/Filter_1.c ****     if (scan->point == datpoint) {                          // Handle chain-out of first item in ch
+  66              		.loc 1 81 0
+  67 0026 1B68     		ldr	r3, [r3]
+  68 0028 9D42     		cmp	r5, r3
+  69 002a 01D1     		bne	.L4
+  82:Generated_Source\PSoC5/Filter_1.c ****         scan->point = successor;
+  70              		.loc 1 82 0
+  71 002c 174B     		ldr	r3, .L14
+  72 002e 1F60     		str	r7, [r3]
+  73              	.L4:
+  74              	.LVL3:
+  83:Generated_Source\PSoC5/Filter_1.c ****     }
+  84:Generated_Source\PSoC5/Filter_1.c ****     
+  85:Generated_Source\PSoC5/Filter_1.c ****     scanold = scan;                                         // Save this pointer and   
+  86:Generated_Source\PSoC5/Filter_1.c ****     scan = scan->point ;                                    // step down chain 
+  75              		.loc 1 86 0
+  76 0030 164B     		ldr	r3, .L14
+  77 0032 1A68     		ldr	r2, [r3]
+  78              	.LVL4:
+  87:Generated_Source\PSoC5/Filter_1.c ****  
+  88:Generated_Source\PSoC5/Filter_1.c ****     uint16 i;
+  89:Generated_Source\PSoC5/Filter_1.c ****     for (i = 0; i < FilterSize; ++i)                        // Loop through the chain, normal loop 
+  79              		.loc 1 89 0
+  80 0034 0021     		movs	r1, #0
+  76:Generated_Source\PSoC5/Filter_1.c ****     scanold = NULL;                                         // Scanold initially null. 
+  81              		.loc 1 76 0
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 4
+
+
+  82 0036 1E46     		mov	r6, r3
+  83              		.loc 1 89 0
+  84 0038 22E0     		b	.L5
+  85              	.LVL5:
+  86              	.L11:
+  90:Generated_Source\PSoC5/Filter_1.c ****     {
+  91:Generated_Source\PSoC5/Filter_1.c ****          
+  92:Generated_Source\PSoC5/Filter_1.c ****         if (scan->point == datpoint) {                      // Handle odd-numbered item in chain 
+  87              		.loc 1 92 0
+  88 003a 1468     		ldr	r4, [r2]
+  89 003c A542     		cmp	r5, r4
+  90 003e 00D1     		bne	.L6
+  93:Generated_Source\PSoC5/Filter_1.c ****             scan->point = successor;                        // Chain out the old datum.
+  91              		.loc 1 93 0
+  92 0040 1760     		str	r7, [r2]
+  93              	.L6:
+  94:Generated_Source\PSoC5/Filter_1.c ****         }
+  95:Generated_Source\PSoC5/Filter_1.c **** 
+  96:Generated_Source\PSoC5/Filter_1.c ****         if (scan->value < datum)                            // If datum is larger than scanned valu
+  94              		.loc 1 96 0
+  95 0042 5468     		ldr	r4, [r2, #4]
+  96 0044 A042     		cmp	r0, r4
+  97 0046 04DD     		ble	.L7
+  97:Generated_Source\PSoC5/Filter_1.c ****         {
+  98:Generated_Source\PSoC5/Filter_1.c ****             datpoint->point = scanold->point;               // Chain it in here.  
+  98              		.loc 1 98 0
+  99 0048 1868     		ldr	r0, [r3]
+ 100              	.LVL6:
+ 101 004a 2860     		str	r0, [r5]
+  99:Generated_Source\PSoC5/Filter_1.c ****             scanold->point  = datpoint;                     // Mark it chained in. 
+ 102              		.loc 1 99 0
+ 103 004c 1D60     		str	r5, [r3]
+ 104              	.LVL7:
+ 100:Generated_Source\PSoC5/Filter_1.c ****             datum = STOPPER;
+ 105              		.loc 1 100 0
+ 106 004e 4FF00040 		mov	r0, #-2147483648
+ 107              	.LVL8:
+ 108              	.L7:
+ 101:Generated_Source\PSoC5/Filter_1.c ****         };
+ 102:Generated_Source\PSoC5/Filter_1.c **** 
+ 103:Generated_Source\PSoC5/Filter_1.c ****         // Step median pointer down chain after doing odd-numbered element 
+ 104:Generated_Source\PSoC5/Filter_1.c ****         median = median->point;                             // Step median pointer.  
+ 109              		.loc 1 104 0
+ 110 0052 3668     		ldr	r6, [r6]
+ 111              	.LVL9:
+ 105:Generated_Source\PSoC5/Filter_1.c ****         
+ 106:Generated_Source\PSoC5/Filter_1.c ****         if (scan == &small) break;                          // Break at end of chain  
+ 112              		.loc 1 106 0
+ 113 0054 0F4B     		ldr	r3, .L14+8
+ 114              	.LVL10:
+ 115 0056 9A42     		cmp	r2, r3
+ 116 0058 14D0     		beq	.L8
+ 117              	.LVL11:
+ 107:Generated_Source\PSoC5/Filter_1.c ****         
+ 108:Generated_Source\PSoC5/Filter_1.c ****         scanold = scan;                                     // Save this pointer and   
+ 109:Generated_Source\PSoC5/Filter_1.c ****         scan = scan->point;                                 // step down chain 
+ 118              		.loc 1 109 0
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 5
+
+
+ 119 005a 1368     		ldr	r3, [r2]
+ 120              	.LVL12:
+ 110:Generated_Source\PSoC5/Filter_1.c ****   
+ 111:Generated_Source\PSoC5/Filter_1.c ****         if (scan->point == datpoint) {                      // Handle even-numbered item in chain.
+ 121              		.loc 1 111 0
+ 122 005c 1C68     		ldr	r4, [r3]
+ 123 005e A542     		cmp	r5, r4
+ 124 0060 00D1     		bne	.L9
+ 112:Generated_Source\PSoC5/Filter_1.c ****             scan->point = successor;
+ 125              		.loc 1 112 0
+ 126 0062 1F60     		str	r7, [r3]
+ 127              	.L9:
+ 113:Generated_Source\PSoC5/Filter_1.c ****         }
+ 114:Generated_Source\PSoC5/Filter_1.c **** 
+ 115:Generated_Source\PSoC5/Filter_1.c ****         if (scan->value < datum)
+ 128              		.loc 1 115 0
+ 129 0064 5C68     		ldr	r4, [r3, #4]
+ 130 0066 A042     		cmp	r0, r4
+ 131 0068 04DD     		ble	.L10
+ 116:Generated_Source\PSoC5/Filter_1.c ****         {
+ 117:Generated_Source\PSoC5/Filter_1.c ****             datpoint->point = scanold->point;
+ 132              		.loc 1 117 0
+ 133 006a 1068     		ldr	r0, [r2]
+ 134              	.LVL13:
+ 135 006c 2860     		str	r0, [r5]
+ 118:Generated_Source\PSoC5/Filter_1.c ****             scanold->point  = datpoint;
+ 136              		.loc 1 118 0
+ 137 006e 1560     		str	r5, [r2]
+ 138              	.LVL14:
+ 119:Generated_Source\PSoC5/Filter_1.c ****             datum = STOPPER;
+ 139              		.loc 1 119 0
+ 140 0070 4FF00040 		mov	r0, #-2147483648
+ 141              	.LVL15:
+ 142              	.L10:
+ 120:Generated_Source\PSoC5/Filter_1.c ****         }
+ 121:Generated_Source\PSoC5/Filter_1.c **** 
+ 122:Generated_Source\PSoC5/Filter_1.c ****         if (scan == &small) break;
+ 143              		.loc 1 122 0
+ 144 0074 074A     		ldr	r2, .L14+8
+ 145              	.LVL16:
+ 146 0076 9342     		cmp	r3, r2
+ 147 0078 04D0     		beq	.L8
+ 148              	.LVL17:
+ 123:Generated_Source\PSoC5/Filter_1.c **** 
+ 124:Generated_Source\PSoC5/Filter_1.c ****         scanold = scan;
+ 125:Generated_Source\PSoC5/Filter_1.c ****         scan = scan->point;
+ 149              		.loc 1 125 0 discriminator 2
+ 150 007a 1A68     		ldr	r2, [r3]
+ 151              	.LVL18:
+  89:Generated_Source\PSoC5/Filter_1.c ****     {
+ 152              		.loc 1 89 0 discriminator 2
+ 153 007c 0131     		adds	r1, r1, #1
+ 154              	.LVL19:
+ 155 007e 89B2     		uxth	r1, r1
+ 156              	.LVL20:
+ 157              	.L5:
+  89:Generated_Source\PSoC5/Filter_1.c ****     {
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 6
+
+
+ 158              		.loc 1 89 0 is_stmt 0 discriminator 1
+ 159 0080 1429     		cmp	r1, #20
+ 160 0082 DAD9     		bls	.L11
+ 161              	.LVL21:
+ 162              	.L8:
+ 126:Generated_Source\PSoC5/Filter_1.c ****     }
+ 127:Generated_Source\PSoC5/Filter_1.c ****  
+ 128:Generated_Source\PSoC5/Filter_1.c ****     return median->value;
+ 129:Generated_Source\PSoC5/Filter_1.c **** }
+ 163              		.loc 1 129 0 is_stmt 1
+ 164 0084 7068     		ldr	r0, [r6, #4]
+ 165              	.LVL22:
+ 166 0086 F0BC     		pop	{r4, r5, r6, r7}
+ 167              		.cfi_restore 7
+ 168              		.cfi_restore 6
+ 169              		.cfi_restore 5
+ 170              		.cfi_restore 4
+ 171              		.cfi_def_cfa_offset 0
+ 172              	.LVL23:
+ 173 0088 7047     		bx	lr
+ 174              	.L15:
+ 175 008a 00BF     		.align	2
+ 176              	.L14:
+ 177 008c 00000000 		.word	.LANCHOR0
+ 178 0090 00000000 		.word	.LANCHOR1
+ 179 0094 0C000000 		.word	.LANCHOR0+12
+ 180              		.cfi_endproc
+ 181              	.LFE63:
+ 182              		.size	Filter_1_AddValue, .-Filter_1_AddValue
+ 183              		.comm	Button_1_Pressed,4,4
+ 184              		.data
+ 185              		.align	2
+ 186              		.set	.LANCHOR0,. + 0
+ 187              		.type	big.5922, %object
+ 188              		.size	big.5922, 8
+ 189              	big.5922:
+ 190 0000 0C000000 		.word	small.5921
+ 191 0004 00000000 		.word	0
+ 192              		.type	datpoint.5920, %object
+ 193              		.size	datpoint.5920, 4
+ 194              	datpoint.5920:
+ 195 0008 00000000 		.word	buffer.5919
+ 196              		.type	small.5921, %object
+ 197              		.size	small.5921, 8
+ 198              	small.5921:
+ 199 000c 00000000 		.word	0
+ 200 0010 00000080 		.word	-2147483648
+ 201              		.bss
+ 202              		.align	2
+ 203              		.set	.LANCHOR1,. + 0
+ 204              		.type	buffer.5919, %object
+ 205              		.size	buffer.5919, 168
+ 206              	buffer.5919:
+ 207 0000 00000000 		.space	168
+ 207      00000000 
+ 207      00000000 
+ 207      00000000 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 7
+
+
+ 207      00000000 
+ 208              		.text
+ 209              	.Letext0:
+ 210              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.2\\psoc creator\\import\\gnu\\arm\\5.4.
+ 211              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.2\\psoc creator\\import\\gnu\\arm\\5.4.
+ 212              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
+ 213              		.file 5 "Generated_Source\\PSoC5/core_cm3.h"
+ 214              		.file 6 "Generated_Source\\PSoC5/Button_1.h"
+ 215              		.section	.debug_info,"",%progbits
+ 216              	.Ldebug_info0:
+ 217 0000 DD010000 		.4byte	0x1dd
+ 218 0004 0400     		.2byte	0x4
+ 219 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 220 000a 04       		.byte	0x4
+ 221 000b 01       		.uleb128 0x1
+ 222 000c 75000000 		.4byte	.LASF30
+ 223 0010 0C       		.byte	0xc
+ 224 0011 EE010000 		.4byte	.LASF31
+ 225 0015 03010000 		.4byte	.LASF32
+ 226 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 227 001d 00000000 		.4byte	0
+ 228 0021 00000000 		.4byte	.Ldebug_line0
+ 229 0025 02       		.uleb128 0x2
+ 230 0026 01       		.byte	0x1
+ 231 0027 06       		.byte	0x6
+ 232 0028 45020000 		.4byte	.LASF0
+ 233 002c 02       		.uleb128 0x2
+ 234 002d 01       		.byte	0x1
+ 235 002e 08       		.byte	0x8
+ 236 002f 67000000 		.4byte	.LASF1
+ 237 0033 02       		.uleb128 0x2
+ 238 0034 02       		.byte	0x2
+ 239 0035 05       		.byte	0x5
+ 240 0036 10020000 		.4byte	.LASF2
+ 241 003a 02       		.uleb128 0x2
+ 242 003b 02       		.byte	0x2
+ 243 003c 07       		.byte	0x7
+ 244 003d 1F000000 		.4byte	.LASF3
+ 245 0041 03       		.uleb128 0x3
+ 246 0042 0F000000 		.4byte	.LASF9
+ 247 0046 02       		.byte	0x2
+ 248 0047 3F       		.byte	0x3f
+ 249 0048 4C000000 		.4byte	0x4c
+ 250 004c 02       		.uleb128 0x2
+ 251 004d 04       		.byte	0x4
+ 252 004e 05       		.byte	0x5
+ 253 004f 21020000 		.4byte	.LASF4
+ 254 0053 02       		.uleb128 0x2
+ 255 0054 04       		.byte	0x4
+ 256 0055 07       		.byte	0x7
+ 257 0056 8E010000 		.4byte	.LASF5
+ 258 005a 02       		.uleb128 0x2
+ 259 005b 08       		.byte	0x8
+ 260 005c 05       		.byte	0x5
+ 261 005d DB010000 		.4byte	.LASF6
+ 262 0061 02       		.uleb128 0x2
+ 263 0062 08       		.byte	0x8
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 8
+
+
+ 264 0063 07       		.byte	0x7
+ 265 0064 AD010000 		.4byte	.LASF7
+ 266 0068 04       		.uleb128 0x4
+ 267 0069 04       		.byte	0x4
+ 268 006a 05       		.byte	0x5
+ 269 006b 696E7400 		.ascii	"int\000"
+ 270 006f 02       		.uleb128 0x2
+ 271 0070 04       		.byte	0x4
+ 272 0071 07       		.byte	0x7
+ 273 0072 A0010000 		.4byte	.LASF8
+ 274 0076 03       		.uleb128 0x3
+ 275 0077 CA010000 		.4byte	.LASF10
+ 276 007b 03       		.byte	0x3
+ 277 007c 2C       		.byte	0x2c
+ 278 007d 41000000 		.4byte	0x41
+ 279 0081 05       		.uleb128 0x5
+ 280 0082 80010000 		.4byte	.LASF11
+ 281 0086 04       		.byte	0x4
+ 282 0087 9301     		.2byte	0x193
+ 283 0089 3A000000 		.4byte	0x3a
+ 284 008d 05       		.uleb128 0x5
+ 285 008e 87010000 		.4byte	.LASF12
+ 286 0092 04       		.byte	0x4
+ 287 0093 9401     		.2byte	0x194
+ 288 0095 53000000 		.4byte	0x53
+ 289 0099 05       		.uleb128 0x5
+ 290 009a 5D010000 		.4byte	.LASF13
+ 291 009e 04       		.byte	0x4
+ 292 009f 9701     		.2byte	0x197
+ 293 00a1 4C000000 		.4byte	0x4c
+ 294 00a5 02       		.uleb128 0x2
+ 295 00a6 04       		.byte	0x4
+ 296 00a7 04       		.byte	0x4
+ 297 00a8 61000000 		.4byte	.LASF14
+ 298 00ac 02       		.uleb128 0x2
+ 299 00ad 08       		.byte	0x8
+ 300 00ae 04       		.byte	0x4
+ 301 00af 37000000 		.4byte	.LASF15
+ 302 00b3 02       		.uleb128 0x2
+ 303 00b4 01       		.byte	0x1
+ 304 00b5 08       		.byte	0x8
+ 305 00b6 E9010000 		.4byte	.LASF16
+ 306 00ba 06       		.uleb128 0x6
+ 307 00bb 8D000000 		.4byte	0x8d
+ 308 00bf 02       		.uleb128 0x2
+ 309 00c0 08       		.byte	0x8
+ 310 00c1 04       		.byte	0x4
+ 311 00c2 32020000 		.4byte	.LASF17
+ 312 00c6 02       		.uleb128 0x2
+ 313 00c7 04       		.byte	0x4
+ 314 00c8 07       		.byte	0x7
+ 315 00c9 D2010000 		.4byte	.LASF18
+ 316 00cd 07       		.uleb128 0x7
+ 317 00ce 4F000000 		.4byte	.LASF33
+ 318 00d2 01       		.byte	0x1
+ 319 00d3 30       		.byte	0x30
+ 320 00d4 99000000 		.4byte	0x99
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 9
+
+
+ 321 00d8 00000000 		.4byte	.LFB63
+ 322 00dc 98000000 		.4byte	.LFE63-.LFB63
+ 323 00e0 01       		.uleb128 0x1
+ 324 00e1 9C       		.byte	0x9c
+ 325 00e2 A8010000 		.4byte	0x1a8
+ 326 00e6 08       		.uleb128 0x8
+ 327 00e7 C4010000 		.4byte	.LASF34
+ 328 00eb 01       		.byte	0x1
+ 329 00ec 30       		.byte	0x30
+ 330 00ed 99000000 		.4byte	0x99
+ 331 00f1 00000000 		.4byte	.LLST0
+ 332 00f5 09       		.uleb128 0x9
+ 333 00f6 32000000 		.4byte	.LASF35
+ 334 00fa 08       		.byte	0x8
+ 335 00fb 01       		.byte	0x1
+ 336 00fc 33       		.byte	0x33
+ 337 00fd 1A010000 		.4byte	0x11a
+ 338 0101 0A       		.uleb128 0xa
+ 339 0102 19000000 		.4byte	.LASF19
+ 340 0106 01       		.byte	0x1
+ 341 0107 35       		.byte	0x35
+ 342 0108 A8010000 		.4byte	0x1a8
+ 343 010c 00       		.byte	0
+ 344 010d 0A       		.uleb128 0xa
+ 345 010e 09000000 		.4byte	.LASF20
+ 346 0112 01       		.byte	0x1
+ 347 0113 36       		.byte	0x36
+ 348 0114 99000000 		.4byte	0x99
+ 349 0118 04       		.byte	0x4
+ 350 0119 00       		.byte	0
+ 351 011a 0B       		.uleb128 0xb
+ 352 011b 1A020000 		.4byte	.LASF21
+ 353 011f 01       		.byte	0x1
+ 354 0120 39       		.byte	0x39
+ 355 0121 AE010000 		.4byte	0x1ae
+ 356 0125 05       		.uleb128 0x5
+ 357 0126 03       		.byte	0x3
+ 358 0127 00000000 		.4byte	buffer.5919
+ 359 012b 0B       		.uleb128 0xb
+ 360 012c 00000000 		.4byte	.LASF22
+ 361 0130 01       		.byte	0x1
+ 362 0131 3A       		.byte	0x3a
+ 363 0132 A8010000 		.4byte	0x1a8
+ 364 0136 05       		.uleb128 0x5
+ 365 0137 03       		.byte	0x3
+ 366 0138 08000000 		.4byte	datpoint.5920
+ 367 013c 0B       		.uleb128 0xb
+ 368 013d 70010000 		.4byte	.LASF23
+ 369 0141 01       		.byte	0x1
+ 370 0142 3B       		.byte	0x3b
+ 371 0143 F5000000 		.4byte	0xf5
+ 372 0147 05       		.uleb128 0x5
+ 373 0148 03       		.byte	0x3
+ 374 0149 0C000000 		.4byte	small.5921
+ 375 014d 0C       		.uleb128 0xc
+ 376 014e 62696700 		.ascii	"big\000"
+ 377 0152 01       		.byte	0x1
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 10
+
+
+ 378 0153 3C       		.byte	0x3c
+ 379 0154 F5000000 		.4byte	0xf5
+ 380 0158 05       		.uleb128 0x5
+ 381 0159 03       		.byte	0x3
+ 382 015a 00000000 		.4byte	big.5922
+ 383 015e 0D       		.uleb128 0xd
+ 384 015f 76010000 		.4byte	.LASF24
+ 385 0163 01       		.byte	0x1
+ 386 0164 3E       		.byte	0x3e
+ 387 0165 A8010000 		.4byte	0x1a8
+ 388 0169 52000000 		.4byte	.LLST1
+ 389 016d 0D       		.uleb128 0xd
+ 390 016e 51020000 		.4byte	.LASF25
+ 391 0172 01       		.byte	0x1
+ 392 0173 3F       		.byte	0x3f
+ 393 0174 A8010000 		.4byte	0x1a8
+ 394 0178 65000000 		.4byte	.LLST2
+ 395 017c 0D       		.uleb128 0xd
+ 396 017d 2A020000 		.4byte	.LASF26
+ 397 0181 01       		.byte	0x1
+ 398 0182 40       		.byte	0x40
+ 399 0183 A8010000 		.4byte	0x1a8
+ 400 0187 9E000000 		.4byte	.LLST3
+ 401 018b 0D       		.uleb128 0xd
+ 402 018c 3E020000 		.4byte	.LASF27
+ 403 0190 01       		.byte	0x1
+ 404 0191 41       		.byte	0x41
+ 405 0192 A8010000 		.4byte	0x1a8
+ 406 0196 E3000000 		.4byte	.LLST4
+ 407 019a 0E       		.uleb128 0xe
+ 408 019b 6900     		.ascii	"i\000"
+ 409 019d 01       		.byte	0x1
+ 410 019e 58       		.byte	0x58
+ 411 019f 81000000 		.4byte	0x81
+ 412 01a3 06010000 		.4byte	.LLST5
+ 413 01a7 00       		.byte	0
+ 414 01a8 0F       		.uleb128 0xf
+ 415 01a9 04       		.byte	0x4
+ 416 01aa F5000000 		.4byte	0xf5
+ 417 01ae 10       		.uleb128 0x10
+ 418 01af F5000000 		.4byte	0xf5
+ 419 01b3 BE010000 		.4byte	0x1be
+ 420 01b7 11       		.uleb128 0x11
+ 421 01b8 C6000000 		.4byte	0xc6
+ 422 01bc 14       		.byte	0x14
+ 423 01bd 00       		.byte	0
+ 424 01be 12       		.uleb128 0x12
+ 425 01bf 63010000 		.4byte	.LASF28
+ 426 01c3 05       		.byte	0x5
+ 427 01c4 9606     		.2byte	0x696
+ 428 01c6 CA010000 		.4byte	0x1ca
+ 429 01ca 06       		.uleb128 0x6
+ 430 01cb 76000000 		.4byte	0x76
+ 431 01cf 13       		.uleb128 0x13
+ 432 01d0 3E000000 		.4byte	.LASF29
+ 433 01d4 06       		.byte	0x6
+ 434 01d5 59       		.byte	0x59
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 11
+
+
+ 435 01d6 BA000000 		.4byte	0xba
+ 436 01da 05       		.uleb128 0x5
+ 437 01db 03       		.byte	0x3
+ 438 01dc 00000000 		.4byte	Button_1_Pressed
+ 439 01e0 00       		.byte	0
+ 440              		.section	.debug_abbrev,"",%progbits
+ 441              	.Ldebug_abbrev0:
+ 442 0000 01       		.uleb128 0x1
+ 443 0001 11       		.uleb128 0x11
+ 444 0002 01       		.byte	0x1
+ 445 0003 25       		.uleb128 0x25
+ 446 0004 0E       		.uleb128 0xe
+ 447 0005 13       		.uleb128 0x13
+ 448 0006 0B       		.uleb128 0xb
+ 449 0007 03       		.uleb128 0x3
+ 450 0008 0E       		.uleb128 0xe
+ 451 0009 1B       		.uleb128 0x1b
+ 452 000a 0E       		.uleb128 0xe
+ 453 000b 55       		.uleb128 0x55
+ 454 000c 17       		.uleb128 0x17
+ 455 000d 11       		.uleb128 0x11
+ 456 000e 01       		.uleb128 0x1
+ 457 000f 10       		.uleb128 0x10
+ 458 0010 17       		.uleb128 0x17
+ 459 0011 00       		.byte	0
+ 460 0012 00       		.byte	0
+ 461 0013 02       		.uleb128 0x2
+ 462 0014 24       		.uleb128 0x24
+ 463 0015 00       		.byte	0
+ 464 0016 0B       		.uleb128 0xb
+ 465 0017 0B       		.uleb128 0xb
+ 466 0018 3E       		.uleb128 0x3e
+ 467 0019 0B       		.uleb128 0xb
+ 468 001a 03       		.uleb128 0x3
+ 469 001b 0E       		.uleb128 0xe
+ 470 001c 00       		.byte	0
+ 471 001d 00       		.byte	0
+ 472 001e 03       		.uleb128 0x3
+ 473 001f 16       		.uleb128 0x16
+ 474 0020 00       		.byte	0
+ 475 0021 03       		.uleb128 0x3
+ 476 0022 0E       		.uleb128 0xe
+ 477 0023 3A       		.uleb128 0x3a
+ 478 0024 0B       		.uleb128 0xb
+ 479 0025 3B       		.uleb128 0x3b
+ 480 0026 0B       		.uleb128 0xb
+ 481 0027 49       		.uleb128 0x49
+ 482 0028 13       		.uleb128 0x13
+ 483 0029 00       		.byte	0
+ 484 002a 00       		.byte	0
+ 485 002b 04       		.uleb128 0x4
+ 486 002c 24       		.uleb128 0x24
+ 487 002d 00       		.byte	0
+ 488 002e 0B       		.uleb128 0xb
+ 489 002f 0B       		.uleb128 0xb
+ 490 0030 3E       		.uleb128 0x3e
+ 491 0031 0B       		.uleb128 0xb
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 12
+
+
+ 492 0032 03       		.uleb128 0x3
+ 493 0033 08       		.uleb128 0x8
+ 494 0034 00       		.byte	0
+ 495 0035 00       		.byte	0
+ 496 0036 05       		.uleb128 0x5
+ 497 0037 16       		.uleb128 0x16
+ 498 0038 00       		.byte	0
+ 499 0039 03       		.uleb128 0x3
+ 500 003a 0E       		.uleb128 0xe
+ 501 003b 3A       		.uleb128 0x3a
+ 502 003c 0B       		.uleb128 0xb
+ 503 003d 3B       		.uleb128 0x3b
+ 504 003e 05       		.uleb128 0x5
+ 505 003f 49       		.uleb128 0x49
+ 506 0040 13       		.uleb128 0x13
+ 507 0041 00       		.byte	0
+ 508 0042 00       		.byte	0
+ 509 0043 06       		.uleb128 0x6
+ 510 0044 35       		.uleb128 0x35
+ 511 0045 00       		.byte	0
+ 512 0046 49       		.uleb128 0x49
+ 513 0047 13       		.uleb128 0x13
+ 514 0048 00       		.byte	0
+ 515 0049 00       		.byte	0
+ 516 004a 07       		.uleb128 0x7
+ 517 004b 2E       		.uleb128 0x2e
+ 518 004c 01       		.byte	0x1
+ 519 004d 3F       		.uleb128 0x3f
+ 520 004e 19       		.uleb128 0x19
+ 521 004f 03       		.uleb128 0x3
+ 522 0050 0E       		.uleb128 0xe
+ 523 0051 3A       		.uleb128 0x3a
+ 524 0052 0B       		.uleb128 0xb
+ 525 0053 3B       		.uleb128 0x3b
+ 526 0054 0B       		.uleb128 0xb
+ 527 0055 27       		.uleb128 0x27
+ 528 0056 19       		.uleb128 0x19
+ 529 0057 49       		.uleb128 0x49
+ 530 0058 13       		.uleb128 0x13
+ 531 0059 11       		.uleb128 0x11
+ 532 005a 01       		.uleb128 0x1
+ 533 005b 12       		.uleb128 0x12
+ 534 005c 06       		.uleb128 0x6
+ 535 005d 40       		.uleb128 0x40
+ 536 005e 18       		.uleb128 0x18
+ 537 005f 9742     		.uleb128 0x2117
+ 538 0061 19       		.uleb128 0x19
+ 539 0062 01       		.uleb128 0x1
+ 540 0063 13       		.uleb128 0x13
+ 541 0064 00       		.byte	0
+ 542 0065 00       		.byte	0
+ 543 0066 08       		.uleb128 0x8
+ 544 0067 05       		.uleb128 0x5
+ 545 0068 00       		.byte	0
+ 546 0069 03       		.uleb128 0x3
+ 547 006a 0E       		.uleb128 0xe
+ 548 006b 3A       		.uleb128 0x3a
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 13
+
+
+ 549 006c 0B       		.uleb128 0xb
+ 550 006d 3B       		.uleb128 0x3b
+ 551 006e 0B       		.uleb128 0xb
+ 552 006f 49       		.uleb128 0x49
+ 553 0070 13       		.uleb128 0x13
+ 554 0071 02       		.uleb128 0x2
+ 555 0072 17       		.uleb128 0x17
+ 556 0073 00       		.byte	0
+ 557 0074 00       		.byte	0
+ 558 0075 09       		.uleb128 0x9
+ 559 0076 13       		.uleb128 0x13
+ 560 0077 01       		.byte	0x1
+ 561 0078 03       		.uleb128 0x3
+ 562 0079 0E       		.uleb128 0xe
+ 563 007a 0B       		.uleb128 0xb
+ 564 007b 0B       		.uleb128 0xb
+ 565 007c 3A       		.uleb128 0x3a
+ 566 007d 0B       		.uleb128 0xb
+ 567 007e 3B       		.uleb128 0x3b
+ 568 007f 0B       		.uleb128 0xb
+ 569 0080 01       		.uleb128 0x1
+ 570 0081 13       		.uleb128 0x13
+ 571 0082 00       		.byte	0
+ 572 0083 00       		.byte	0
+ 573 0084 0A       		.uleb128 0xa
+ 574 0085 0D       		.uleb128 0xd
+ 575 0086 00       		.byte	0
+ 576 0087 03       		.uleb128 0x3
+ 577 0088 0E       		.uleb128 0xe
+ 578 0089 3A       		.uleb128 0x3a
+ 579 008a 0B       		.uleb128 0xb
+ 580 008b 3B       		.uleb128 0x3b
+ 581 008c 0B       		.uleb128 0xb
+ 582 008d 49       		.uleb128 0x49
+ 583 008e 13       		.uleb128 0x13
+ 584 008f 38       		.uleb128 0x38
+ 585 0090 0B       		.uleb128 0xb
+ 586 0091 00       		.byte	0
+ 587 0092 00       		.byte	0
+ 588 0093 0B       		.uleb128 0xb
+ 589 0094 34       		.uleb128 0x34
+ 590 0095 00       		.byte	0
+ 591 0096 03       		.uleb128 0x3
+ 592 0097 0E       		.uleb128 0xe
+ 593 0098 3A       		.uleb128 0x3a
+ 594 0099 0B       		.uleb128 0xb
+ 595 009a 3B       		.uleb128 0x3b
+ 596 009b 0B       		.uleb128 0xb
+ 597 009c 49       		.uleb128 0x49
+ 598 009d 13       		.uleb128 0x13
+ 599 009e 02       		.uleb128 0x2
+ 600 009f 18       		.uleb128 0x18
+ 601 00a0 00       		.byte	0
+ 602 00a1 00       		.byte	0
+ 603 00a2 0C       		.uleb128 0xc
+ 604 00a3 34       		.uleb128 0x34
+ 605 00a4 00       		.byte	0
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 14
+
+
+ 606 00a5 03       		.uleb128 0x3
+ 607 00a6 08       		.uleb128 0x8
+ 608 00a7 3A       		.uleb128 0x3a
+ 609 00a8 0B       		.uleb128 0xb
+ 610 00a9 3B       		.uleb128 0x3b
+ 611 00aa 0B       		.uleb128 0xb
+ 612 00ab 49       		.uleb128 0x49
+ 613 00ac 13       		.uleb128 0x13
+ 614 00ad 02       		.uleb128 0x2
+ 615 00ae 18       		.uleb128 0x18
+ 616 00af 00       		.byte	0
+ 617 00b0 00       		.byte	0
+ 618 00b1 0D       		.uleb128 0xd
+ 619 00b2 34       		.uleb128 0x34
+ 620 00b3 00       		.byte	0
+ 621 00b4 03       		.uleb128 0x3
+ 622 00b5 0E       		.uleb128 0xe
+ 623 00b6 3A       		.uleb128 0x3a
+ 624 00b7 0B       		.uleb128 0xb
+ 625 00b8 3B       		.uleb128 0x3b
+ 626 00b9 0B       		.uleb128 0xb
+ 627 00ba 49       		.uleb128 0x49
+ 628 00bb 13       		.uleb128 0x13
+ 629 00bc 02       		.uleb128 0x2
+ 630 00bd 17       		.uleb128 0x17
+ 631 00be 00       		.byte	0
+ 632 00bf 00       		.byte	0
+ 633 00c0 0E       		.uleb128 0xe
+ 634 00c1 34       		.uleb128 0x34
+ 635 00c2 00       		.byte	0
+ 636 00c3 03       		.uleb128 0x3
+ 637 00c4 08       		.uleb128 0x8
+ 638 00c5 3A       		.uleb128 0x3a
+ 639 00c6 0B       		.uleb128 0xb
+ 640 00c7 3B       		.uleb128 0x3b
+ 641 00c8 0B       		.uleb128 0xb
+ 642 00c9 49       		.uleb128 0x49
+ 643 00ca 13       		.uleb128 0x13
+ 644 00cb 02       		.uleb128 0x2
+ 645 00cc 17       		.uleb128 0x17
+ 646 00cd 00       		.byte	0
+ 647 00ce 00       		.byte	0
+ 648 00cf 0F       		.uleb128 0xf
+ 649 00d0 0F       		.uleb128 0xf
+ 650 00d1 00       		.byte	0
+ 651 00d2 0B       		.uleb128 0xb
+ 652 00d3 0B       		.uleb128 0xb
+ 653 00d4 49       		.uleb128 0x49
+ 654 00d5 13       		.uleb128 0x13
+ 655 00d6 00       		.byte	0
+ 656 00d7 00       		.byte	0
+ 657 00d8 10       		.uleb128 0x10
+ 658 00d9 01       		.uleb128 0x1
+ 659 00da 01       		.byte	0x1
+ 660 00db 49       		.uleb128 0x49
+ 661 00dc 13       		.uleb128 0x13
+ 662 00dd 01       		.uleb128 0x1
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 15
+
+
+ 663 00de 13       		.uleb128 0x13
+ 664 00df 00       		.byte	0
+ 665 00e0 00       		.byte	0
+ 666 00e1 11       		.uleb128 0x11
+ 667 00e2 21       		.uleb128 0x21
+ 668 00e3 00       		.byte	0
+ 669 00e4 49       		.uleb128 0x49
+ 670 00e5 13       		.uleb128 0x13
+ 671 00e6 2F       		.uleb128 0x2f
+ 672 00e7 0B       		.uleb128 0xb
+ 673 00e8 00       		.byte	0
+ 674 00e9 00       		.byte	0
+ 675 00ea 12       		.uleb128 0x12
+ 676 00eb 34       		.uleb128 0x34
+ 677 00ec 00       		.byte	0
+ 678 00ed 03       		.uleb128 0x3
+ 679 00ee 0E       		.uleb128 0xe
+ 680 00ef 3A       		.uleb128 0x3a
+ 681 00f0 0B       		.uleb128 0xb
+ 682 00f1 3B       		.uleb128 0x3b
+ 683 00f2 05       		.uleb128 0x5
+ 684 00f3 49       		.uleb128 0x49
+ 685 00f4 13       		.uleb128 0x13
+ 686 00f5 3F       		.uleb128 0x3f
+ 687 00f6 19       		.uleb128 0x19
+ 688 00f7 3C       		.uleb128 0x3c
+ 689 00f8 19       		.uleb128 0x19
+ 690 00f9 00       		.byte	0
+ 691 00fa 00       		.byte	0
+ 692 00fb 13       		.uleb128 0x13
+ 693 00fc 34       		.uleb128 0x34
+ 694 00fd 00       		.byte	0
+ 695 00fe 03       		.uleb128 0x3
+ 696 00ff 0E       		.uleb128 0xe
+ 697 0100 3A       		.uleb128 0x3a
+ 698 0101 0B       		.uleb128 0xb
+ 699 0102 3B       		.uleb128 0x3b
+ 700 0103 0B       		.uleb128 0xb
+ 701 0104 49       		.uleb128 0x49
+ 702 0105 13       		.uleb128 0x13
+ 703 0106 3F       		.uleb128 0x3f
+ 704 0107 19       		.uleb128 0x19
+ 705 0108 02       		.uleb128 0x2
+ 706 0109 18       		.uleb128 0x18
+ 707 010a 00       		.byte	0
+ 708 010b 00       		.byte	0
+ 709 010c 00       		.byte	0
+ 710              		.section	.debug_loc,"",%progbits
+ 711              	.Ldebug_loc0:
+ 712              	.LLST0:
+ 713 0000 00000000 		.4byte	.LVL0
+ 714 0004 0A000000 		.4byte	.LVL1
+ 715 0008 0100     		.2byte	0x1
+ 716 000a 50       		.byte	0x50
+ 717 000b 0A000000 		.4byte	.LVL1
+ 718 000f 4A000000 		.4byte	.LVL6
+ 719 0013 0100     		.2byte	0x1
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 16
+
+
+ 720 0015 50       		.byte	0x50
+ 721 0016 4E000000 		.4byte	.LVL7
+ 722 001a 52000000 		.4byte	.LVL8
+ 723 001e 0500     		.2byte	0x5
+ 724 0020 40       		.byte	0x40
+ 725 0021 4B       		.byte	0x4b
+ 726 0022 24       		.byte	0x24
+ 727 0023 1F       		.byte	0x1f
+ 728 0024 9F       		.byte	0x9f
+ 729 0025 52000000 		.4byte	.LVL8
+ 730 0029 6C000000 		.4byte	.LVL13
+ 731 002d 0100     		.2byte	0x1
+ 732 002f 50       		.byte	0x50
+ 733 0030 70000000 		.4byte	.LVL14
+ 734 0034 74000000 		.4byte	.LVL15
+ 735 0038 0500     		.2byte	0x5
+ 736 003a 40       		.byte	0x40
+ 737 003b 4B       		.byte	0x4b
+ 738 003c 24       		.byte	0x24
+ 739 003d 1F       		.byte	0x1f
+ 740 003e 9F       		.byte	0x9f
+ 741 003f 74000000 		.4byte	.LVL15
+ 742 0043 86000000 		.4byte	.LVL22
+ 743 0047 0100     		.2byte	0x1
+ 744 0049 50       		.byte	0x50
+ 745 004a 00000000 		.4byte	0
+ 746 004e 00000000 		.4byte	0
+ 747              	.LLST1:
+ 748 0052 26000000 		.4byte	.LVL2
+ 749 0056 88000000 		.4byte	.LVL23
+ 750 005a 0100     		.2byte	0x1
+ 751 005c 57       		.byte	0x57
+ 752 005d 00000000 		.4byte	0
+ 753 0061 00000000 		.4byte	0
+ 754              	.LLST2:
+ 755 0065 26000000 		.4byte	.LVL2
+ 756 0069 34000000 		.4byte	.LVL4
+ 757 006d 0600     		.2byte	0x6
+ 758 006f 03       		.byte	0x3
+ 759 0070 00000000 		.4byte	big.5922
+ 760 0074 9F       		.byte	0x9f
+ 761 0075 34000000 		.4byte	.LVL4
+ 762 0079 5C000000 		.4byte	.LVL12
+ 763 007d 0100     		.2byte	0x1
+ 764 007f 52       		.byte	0x52
+ 765 0080 5C000000 		.4byte	.LVL12
+ 766 0084 7C000000 		.4byte	.LVL18
+ 767 0088 0100     		.2byte	0x1
+ 768 008a 53       		.byte	0x53
+ 769 008b 7C000000 		.4byte	.LVL18
+ 770 008f 84000000 		.4byte	.LVL21
+ 771 0093 0100     		.2byte	0x1
+ 772 0095 52       		.byte	0x52
+ 773 0096 00000000 		.4byte	0
+ 774 009a 00000000 		.4byte	0
+ 775              	.LLST3:
+ 776 009e 26000000 		.4byte	.LVL2
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 17
+
+
+ 777 00a2 30000000 		.4byte	.LVL3
+ 778 00a6 0200     		.2byte	0x2
+ 779 00a8 30       		.byte	0x30
+ 780 00a9 9F       		.byte	0x9f
+ 781 00aa 30000000 		.4byte	.LVL3
+ 782 00ae 3A000000 		.4byte	.LVL5
+ 783 00b2 0600     		.2byte	0x6
+ 784 00b4 03       		.byte	0x3
+ 785 00b5 00000000 		.4byte	big.5922
+ 786 00b9 9F       		.byte	0x9f
+ 787 00ba 3A000000 		.4byte	.LVL5
+ 788 00be 56000000 		.4byte	.LVL10
+ 789 00c2 0100     		.2byte	0x1
+ 790 00c4 53       		.byte	0x53
+ 791 00c5 5A000000 		.4byte	.LVL11
+ 792 00c9 76000000 		.4byte	.LVL16
+ 793 00cd 0100     		.2byte	0x1
+ 794 00cf 52       		.byte	0x52
+ 795 00d0 7A000000 		.4byte	.LVL17
+ 796 00d4 84000000 		.4byte	.LVL21
+ 797 00d8 0100     		.2byte	0x1
+ 798 00da 53       		.byte	0x53
+ 799 00db 00000000 		.4byte	0
+ 800 00df 00000000 		.4byte	0
+ 801              	.LLST4:
+ 802 00e3 26000000 		.4byte	.LVL2
+ 803 00e7 3A000000 		.4byte	.LVL5
+ 804 00eb 0600     		.2byte	0x6
+ 805 00ed 03       		.byte	0x3
+ 806 00ee 00000000 		.4byte	big.5922
+ 807 00f2 9F       		.byte	0x9f
+ 808 00f3 3A000000 		.4byte	.LVL5
+ 809 00f7 88000000 		.4byte	.LVL23
+ 810 00fb 0100     		.2byte	0x1
+ 811 00fd 56       		.byte	0x56
+ 812 00fe 00000000 		.4byte	0
+ 813 0102 00000000 		.4byte	0
+ 814              	.LLST5:
+ 815 0106 34000000 		.4byte	.LVL4
+ 816 010a 3A000000 		.4byte	.LVL5
+ 817 010e 0200     		.2byte	0x2
+ 818 0110 30       		.byte	0x30
+ 819 0111 9F       		.byte	0x9f
+ 820 0112 3A000000 		.4byte	.LVL5
+ 821 0116 7E000000 		.4byte	.LVL19
+ 822 011a 0100     		.2byte	0x1
+ 823 011c 51       		.byte	0x51
+ 824 011d 80000000 		.4byte	.LVL20
+ 825 0121 98000000 		.4byte	.LFE63
+ 826 0125 0100     		.2byte	0x1
+ 827 0127 51       		.byte	0x51
+ 828 0128 00000000 		.4byte	0
+ 829 012c 00000000 		.4byte	0
+ 830              		.section	.debug_aranges,"",%progbits
+ 831 0000 1C000000 		.4byte	0x1c
+ 832 0004 0200     		.2byte	0x2
+ 833 0006 00000000 		.4byte	.Ldebug_info0
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 18
+
+
+ 834 000a 04       		.byte	0x4
+ 835 000b 00       		.byte	0
+ 836 000c 0000     		.2byte	0
+ 837 000e 0000     		.2byte	0
+ 838 0010 00000000 		.4byte	.LFB63
+ 839 0014 98000000 		.4byte	.LFE63-.LFB63
+ 840 0018 00000000 		.4byte	0
+ 841 001c 00000000 		.4byte	0
+ 842              		.section	.debug_ranges,"",%progbits
+ 843              	.Ldebug_ranges0:
+ 844 0000 00000000 		.4byte	.LFB63
+ 845 0004 98000000 		.4byte	.LFE63
+ 846 0008 00000000 		.4byte	0
+ 847 000c 00000000 		.4byte	0
+ 848              		.section	.debug_line,"",%progbits
+ 849              	.Ldebug_line0:
+ 850 0000 AA010000 		.section	.debug_str,"MS",%progbits,1
+ 850      02005E01 
+ 850      00000201 
+ 850      FB0E0D00 
+ 850      01010101 
+ 851              	.LASF22:
+ 852 0000 64617470 		.ascii	"datpoint\000"
+ 852      6F696E74 
+ 852      00
+ 853              	.LASF20:
+ 854 0009 76616C75 		.ascii	"value\000"
+ 854      6500
+ 855              	.LASF9:
+ 856 000f 5F5F696E 		.ascii	"__int32_t\000"
+ 856      7433325F 
+ 856      7400
+ 857              	.LASF19:
+ 858 0019 706F696E 		.ascii	"point\000"
+ 858      7400
+ 859              	.LASF3:
+ 860 001f 73686F72 		.ascii	"short unsigned int\000"
+ 860      7420756E 
+ 860      7369676E 
+ 860      65642069 
+ 860      6E7400
+ 861              	.LASF35:
+ 862 0032 70616972 		.ascii	"pair\000"
+ 862      00
+ 863              	.LASF15:
+ 864 0037 646F7562 		.ascii	"double\000"
+ 864      6C6500
+ 865              	.LASF29:
+ 866 003e 42757474 		.ascii	"Button_1_Pressed\000"
+ 866      6F6E5F31 
+ 866      5F507265 
+ 866      73736564 
+ 866      00
+ 867              	.LASF33:
+ 868 004f 46696C74 		.ascii	"Filter_1_AddValue\000"
+ 868      65725F31 
+ 868      5F416464 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 19
+
+
+ 868      56616C75 
+ 868      6500
+ 869              	.LASF14:
+ 870 0061 666C6F61 		.ascii	"float\000"
+ 870      7400
+ 871              	.LASF1:
+ 872 0067 756E7369 		.ascii	"unsigned char\000"
+ 872      676E6564 
+ 872      20636861 
+ 872      7200
+ 873              	.LASF30:
+ 874 0075 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 874      43313120 
+ 874      352E342E 
+ 874      31203230 
+ 874      31363036 
+ 875 00a8 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 875      20726576 
+ 875      6973696F 
+ 875      6E203233 
+ 875      37373135 
+ 876 00db 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 876      66756E63 
+ 876      74696F6E 
+ 876      2D736563 
+ 876      74696F6E 
+ 877              	.LASF32:
+ 878 0103 433A5C55 		.ascii	"C:\\Users\\karth\\Downloads\\conductometry\\psoc-lo"
+ 878      73657273 
+ 878      5C6B6172 
+ 878      74685C44 
+ 878      6F776E6C 
+ 879 0131 636B2D69 		.ascii	"ck-in-H2O-conductance\\Lock-in_H2O_02b.cydsn\000"
+ 879      6E2D4832 
+ 879      4F2D636F 
+ 879      6E647563 
+ 879      74616E63 
+ 880              	.LASF13:
+ 881 015d 696E7433 		.ascii	"int32\000"
+ 881      3200
+ 882              	.LASF28:
+ 883 0163 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 883      52784275 
+ 883      66666572 
+ 883      00
+ 884              	.LASF23:
+ 885 0170 736D616C 		.ascii	"small\000"
+ 885      6C00
+ 886              	.LASF24:
+ 887 0176 73756363 		.ascii	"successor\000"
+ 887      6573736F 
+ 887      7200
+ 888              	.LASF11:
+ 889 0180 75696E74 		.ascii	"uint16\000"
+ 889      313600
+ 890              	.LASF12:
+ 891 0187 75696E74 		.ascii	"uint32\000"
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 20
+
+
+ 891      333200
+ 892              	.LASF5:
+ 893 018e 6C6F6E67 		.ascii	"long unsigned int\000"
+ 893      20756E73 
+ 893      69676E65 
+ 893      6420696E 
+ 893      7400
+ 894              	.LASF8:
+ 895 01a0 756E7369 		.ascii	"unsigned int\000"
+ 895      676E6564 
+ 895      20696E74 
+ 895      00
+ 896              	.LASF7:
+ 897 01ad 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 897      206C6F6E 
+ 897      6720756E 
+ 897      7369676E 
+ 897      65642069 
+ 898              	.LASF34:
+ 899 01c4 64617475 		.ascii	"datum\000"
+ 899      6D00
+ 900              	.LASF10:
+ 901 01ca 696E7433 		.ascii	"int32_t\000"
+ 901      325F7400 
+ 902              	.LASF18:
+ 903 01d2 73697A65 		.ascii	"sizetype\000"
+ 903      74797065 
+ 903      00
+ 904              	.LASF6:
+ 905 01db 6C6F6E67 		.ascii	"long long int\000"
+ 905      206C6F6E 
+ 905      6720696E 
+ 905      7400
+ 906              	.LASF16:
+ 907 01e9 63686172 		.ascii	"char\000"
+ 907      00
+ 908              	.LASF31:
+ 909 01ee 47656E65 		.ascii	"Generated_Source\\PSoC5\\Filter_1.c\000"
+ 909      72617465 
+ 909      645F536F 
+ 909      75726365 
+ 909      5C50536F 
+ 910              	.LASF2:
+ 911 0210 73686F72 		.ascii	"short int\000"
+ 911      7420696E 
+ 911      7400
+ 912              	.LASF21:
+ 913 021a 62756666 		.ascii	"buffer\000"
+ 913      657200
+ 914              	.LASF4:
+ 915 0221 6C6F6E67 		.ascii	"long int\000"
+ 915      20696E74 
+ 915      00
+ 916              	.LASF26:
+ 917 022a 7363616E 		.ascii	"scanold\000"
+ 917      6F6C6400 
+ 918              	.LASF17:
+ARM GAS  C:\Users\karth\AppData\Local\Temp\ccnx9IYk.s 			page 21
+
+
+ 919 0232 6C6F6E67 		.ascii	"long double\000"
+ 919      20646F75 
+ 919      626C6500 
+ 920              	.LASF27:
+ 921 023e 6D656469 		.ascii	"median\000"
+ 921      616E00
+ 922              	.LASF0:
+ 923 0245 7369676E 		.ascii	"signed char\000"
+ 923      65642063 
+ 923      68617200 
+ 924              	.LASF25:
+ 925 0251 7363616E 		.ascii	"scan\000"
+ 925      00
+ 926              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran

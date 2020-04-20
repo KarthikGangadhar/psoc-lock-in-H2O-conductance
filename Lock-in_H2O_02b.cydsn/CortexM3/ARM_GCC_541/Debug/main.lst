@@ -1,0 +1,1535 @@
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 1
+
+
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"main.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.isrADC_InterruptHandler,"ax",%progbits
+  20              		.align	2
+  21              		.global	isrADC_InterruptHandler
+  22              		.thumb
+  23              		.thumb_func
+  24              		.type	isrADC_InterruptHandler, %function
+  25              	isrADC_InterruptHandler:
+  26              	.LFB63:
+  27              		.file 1 "main.c"
+   1:main.c        **** /*******************************************************************************
+   2:main.c        **** * File Name: main.c
+   3:main.c        **** *
+   4:main.c        **** * Version: 1.20
+   5:main.c        **** *
+   6:main.c        **** * Description: 
+   7:main.c        **** *   This is a source code for example project of Lock-in amplifier using Delta-Sigma ADC.
+   8:main.c        **** *   It is intended for water conductivity measurement
+   9:main.c        **** *
+  10:main.c        **** ********************************************************************************
+  11:main.c        **** * NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+  12:main.c        **** * WITH REGARD TO THIS SOFTWARE, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT,
+  13:main.c        **** * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  14:main.c        **** *******************************************************************************/
+  15:main.c        **** 
+  16:main.c        **** #include "project.h"
+  17:main.c        **** 
+  18:main.c        **** #define BlinkLED(); {Pin_LED_Write(1); CyDelayUs(30); Pin_LED_Write(0);} // blink LED indicator
+  19:main.c        **** 
+  20:main.c        **** 
+  21:main.c        **** 
+  22:main.c        **** 
+  23:main.c        **** 
+  24:main.c        **** 
+  25:main.c        **** //===========================================
+  26:main.c        **** // 
+  27:main.c        **** //===========================================
+  28:main.c        **** 
+  29:main.c        **** static volatile CYBIT isrADC_flag = 0; // semaphore between ISR and main()
+  30:main.c        **** static volatile uint32 ADC_1_result; //
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 2
+
+
+  31:main.c        **** //CY_ISR_PROTO(isrADC_InterruptHandler);//declaration
+  32:main.c        **** CY_ISR(isrADC_InterruptHandler)
+  33:main.c        **** {
+  28              		.loc 1 33 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 10B5     		push	{r4, lr}
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 4, -8
+  35              		.cfi_offset 14, -4
+  34:main.c        ****     isrADC_flag = 1;
+  36              		.loc 1 34 0
+  37 0002 034C     		ldr	r4, .L3
+  38 0004 0123     		movs	r3, #1
+  39 0006 2370     		strb	r3, [r4]
+  35:main.c        ****     ADC_1_result = ADC_1_GetResult32();
+  40              		.loc 1 35 0
+  41 0008 FFF7FEFF 		bl	ADC_1_GetResult32
+  42              	.LVL0:
+  43 000c 6060     		str	r0, [r4, #4]
+  44 000e 10BD     		pop	{r4, pc}
+  45              	.L4:
+  46              		.align	2
+  47              	.L3:
+  48 0010 00000000 		.word	.LANCHOR0
+  49              		.cfi_endproc
+  50              	.LFE63:
+  51              		.size	isrADC_InterruptHandler, .-isrADC_InterruptHandler
+  52              		.section	.text.Init,"ax",%progbits
+  53              		.align	2
+  54              		.global	Init
+  55              		.thumb
+  56              		.thumb_func
+  57              		.type	Init, %function
+  58              	Init:
+  59              	.LFB64:
+  36:main.c        **** }
+  37:main.c        **** 
+  38:main.c        **** 
+  39:main.c        **** //===========================================
+  40:main.c        **** // Global variables
+  41:main.c        **** //===========================================
+  42:main.c        **** //int32 IIRout;
+  43:main.c        **** int32 Med_filter;
+  44:main.c        **** int32 ADC_Offset = 0;
+  45:main.c        **** 
+  46:main.c        **** 
+  47:main.c        **** 
+  48:main.c        **** 
+  49:main.c        **** //===========================================
+  50:main.c        **** // Function prototypes
+  51:main.c        **** //===========================================
+  52:main.c        **** void DMA_Config(void);
+  53:main.c        **** int32 LowPassFilter(int32 input);
+  54:main.c        **** 
+  55:main.c        **** 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 3
+
+
+  56:main.c        **** void Init()
+  57:main.c        **** {
+  60              		.loc 1 57 0
+  61              		.cfi_startproc
+  62              		@ args = 0, pretend = 0, frame = 0
+  63              		@ frame_needed = 0, uses_anonymous_args = 0
+  64 0000 08B5     		push	{r3, lr}
+  65              		.cfi_def_cfa_offset 8
+  66              		.cfi_offset 3, -8
+  67              		.cfi_offset 14, -4
+  58:main.c        ****     CyGlobalIntEnable; //enable global interrupts
+  68              		.loc 1 58 0
+  69              		.syntax unified
+  70              	@ 58 "main.c" 1
+  71 0002 62B6     		CPSIE   i
+  72              	@ 0 "" 2
+  59:main.c        ****     
+  60:main.c        ****     UART_1_Start();
+  73              		.loc 1 60 0
+  74              		.thumb
+  75              		.syntax unified
+  76 0004 FFF7FEFF 		bl	UART_1_Start
+  77              	.LVL1:
+  61:main.c        ****     CyDelay(100);
+  78              		.loc 1 61 0
+  79 0008 6420     		movs	r0, #100
+  80 000a FFF7FEFF 		bl	CyDelay
+  81              	.LVL2:
+  62:main.c        ****     
+  63:main.c        ****     Button_1_Start();               // Start Button switch      
+  82              		.loc 1 63 0
+  83 000e FFF7FEFF 		bl	Button_1_Start
+  84              	.LVL3:
+  64:main.c        **** 
+  65:main.c        ****     //ADC_1_IRQ_Start();//not required
+  66:main.c        ****     ADC_1_Start();
+  85              		.loc 1 66 0
+  86 0012 FFF7FEFF 		bl	ADC_1_Start
+  87              	.LVL4:
+  67:main.c        ****     //ADC_1_IRQ_StartEx(ADC_1_IRQ_myInterrupt);//MUST be placed AFTER ADC1_Start()
+  68:main.c        ****     isrADC_StartEx(isrADC_InterruptHandler);//MUST be placed AFTER ADC1_Start()
+  88              		.loc 1 68 0
+  89 0016 0348     		ldr	r0, .L7
+  90 0018 FFF7FEFF 		bl	isrADC_StartEx
+  91              	.LVL5:
+  69:main.c        ****     ADC_1_StartConvert();//only for free-running ADC
+  92              		.loc 1 69 0
+  93 001c FFF7FEFF 		bl	ADC_1_StartConvert
+  94              	.LVL6:
+  95 0020 08BD     		pop	{r3, pc}
+  96              	.L8:
+  97 0022 00BF     		.align	2
+  98              	.L7:
+  99 0024 00000000 		.word	isrADC_InterruptHandler
+ 100              		.cfi_endproc
+ 101              	.LFE64:
+ 102              		.size	Init, .-Init
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 4
+
+
+ 103              		.section	.text.LowPassFilter,"ax",%progbits
+ 104              		.align	2
+ 105              		.global	LowPassFilter
+ 106              		.thumb
+ 107              		.thumb_func
+ 108              		.type	LowPassFilter, %function
+ 109              	LowPassFilter:
+ 110              	.LFB66:
+  70:main.c        **** }
+  71:main.c        **** 
+  72:main.c        **** int main(void)
+  73:main.c        **** {
+  74:main.c        ****     Init();
+  75:main.c        **** 
+  76:main.c        **** 
+  77:main.c        ****     for(;;)
+  78:main.c        ****     {
+  79:main.c        ****         if(isrADC_flag != 0) // monitor for ADC1 interrupt
+  80:main.c        ****         {
+  81:main.c        ****             isrADC_flag = 0;
+  82:main.c        ****             //BlinkLED();
+  83:main.c        ****             
+  84:main.c        ****             ADC_1_result -= ADC_Offset;
+  85:main.c        ****             
+  86:main.c        ****             int32 IIR_filter = LowPassFilter(ADC_1_result);
+  87:main.c        ****             Med_filter = Filter_1_AddValue(ADC_1_result);
+  88:main.c        **** //            Vadc = ADC1_CountsTo_uVolts( ADC1_result );
+  89:main.c        **** //            sprintf(strMsg1,"ADC:%d, Vadc:%d\r\n",  ADC1_result, Vadc);
+  90:main.c        **** //            sprintf(strMsg1,"ADC:%d, V:%.3f\r\n",  ADC1_result,(float) 0.000001*VTherm);
+  91:main.c        **** //            sprintf(strMsg1,"ADC:%d\r\n",  ADC1_result);
+  92:main.c        **** //          BT_Receiver_PutString(strMsg1);
+  93:main.c        ****             Chart_1_Plot(ADC_1_result, IIR_filter, Med_filter);
+  94:main.c        ****         }
+  95:main.c        ****        
+  96:main.c        ****         // tare option
+  97:main.c        ****         if (Button_1_Pressed!=0)                            // some buttons were pressed
+  98:main.c        ****         {
+  99:main.c        ****             uint32 status = Button_1_Pressed;               // capture state
+ 100:main.c        ****             Button_1_Pressed = 0;                           // clear flag
+ 101:main.c        ****             
+ 102:main.c        ****             if (status & BTN_0)                             // Button 0 pressed
+ 103:main.c        ****             {
+ 104:main.c        ****                 BlinkLED();                                 // debug..
+ 105:main.c        ****                 ADC_Offset += Med_filter; // tare: update offset to zero output 
+ 106:main.c        ****             }    
+ 107:main.c        ****         }
+ 108:main.c        ****         
+ 109:main.c        ****     }
+ 110:main.c        ****     
+ 111:main.c        **** }
+ 112:main.c        **** 
+ 113:main.c        **** 
+ 114:main.c        **** //=============================================================================
+ 115:main.c        **** // Exponential averaging
+ 116:main.c        **** // it is provided for comparisen with the median filter
+ 117:main.c        **** //=============================================================================
+ 118:main.c        **** 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 5
+
+
+ 119:main.c        **** int32 LowPassFilter(int32 input)
+ 120:main.c        **** {
+ 111              		.loc 1 120 0
+ 112              		.cfi_startproc
+ 113              		@ args = 0, pretend = 0, frame = 0
+ 114              		@ frame_needed = 0, uses_anonymous_args = 0
+ 115              		@ link register save eliminated.
+ 116              	.LVL7:
+ 121:main.c        ****     static int32 Filter_Acc; // IIR accumulator
+ 122:main.c        ****     
+ 123:main.c        ****     int32 k;
+ 124:main.c        ****     input <<= 8;
+ 125:main.c        ****     Filter_Acc = Filter_Acc + (((input-Filter_Acc) >> 8) * 8);// factor 8/256
+ 117              		.loc 1 125 0
+ 118 0000 064A     		ldr	r2, .L10
+ 119 0002 9368     		ldr	r3, [r2, #8]
+ 120 0004 C3EB0020 		rsb	r0, r3, r0, lsl #8
+ 121              	.LVL8:
+ 122 0008 0012     		asrs	r0, r0, #8
+ 123 000a 03EBC000 		add	r0, r3, r0, lsl #3
+ 124 000e 9060     		str	r0, [r2, #8]
+ 126:main.c        **** //    Filter_Acc = Filter_Acc + ((input-Filter_Acc) >> 8);// factor 1/256
+ 127:main.c        ****     k = (Filter_Acc>>8) + ((Filter_Acc & 0x00000080) >> 7);
+ 125              		.loc 1 127 0
+ 126 0010 C0F3C013 		ubfx	r3, r0, #7, #1
+ 127              	.LVL9:
+ 128:main.c        ****     return k;
+ 129:main.c        **** }
+ 128              		.loc 1 129 0
+ 129 0014 03EB2020 		add	r0, r3, r0, asr #8
+ 130              	.LVL10:
+ 131 0018 7047     		bx	lr
+ 132              	.L11:
+ 133 001a 00BF     		.align	2
+ 134              	.L10:
+ 135 001c 00000000 		.word	.LANCHOR0
+ 136              		.cfi_endproc
+ 137              	.LFE66:
+ 138              		.size	LowPassFilter, .-LowPassFilter
+ 139              		.section	.text.main,"ax",%progbits
+ 140              		.align	2
+ 141              		.global	main
+ 142              		.thumb
+ 143              		.thumb_func
+ 144              		.type	main, %function
+ 145              	main:
+ 146              	.LFB65:
+  73:main.c        ****     Init();
+ 147              		.loc 1 73 0
+ 148              		.cfi_startproc
+ 149              		@ args = 0, pretend = 0, frame = 0
+ 150              		@ frame_needed = 0, uses_anonymous_args = 0
+ 151 0000 38B5     		push	{r3, r4, r5, lr}
+ 152              		.cfi_def_cfa_offset 16
+ 153              		.cfi_offset 3, -16
+ 154              		.cfi_offset 4, -12
+ 155              		.cfi_offset 5, -8
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 6
+
+
+ 156              		.cfi_offset 14, -4
+  74:main.c        **** 
+ 157              		.loc 1 74 0
+ 158 0002 FFF7FEFF 		bl	Init
+ 159              	.LVL11:
+ 160              	.L14:
+  79:main.c        ****         {
+ 161              		.loc 1 79 0
+ 162 0006 1A4B     		ldr	r3, .L18
+ 163 0008 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 164 000a 13F0FF0F 		tst	r3, #255
+ 165 000e 14D0     		beq	.L13
+ 166              	.LBB2:
+  81:main.c        ****             //BlinkLED();
+ 167              		.loc 1 81 0
+ 168 0010 174C     		ldr	r4, .L18
+ 169 0012 0023     		movs	r3, #0
+ 170 0014 2370     		strb	r3, [r4]
+  84:main.c        ****             
+ 171              		.loc 1 84 0
+ 172 0016 6368     		ldr	r3, [r4, #4]
+ 173 0018 E268     		ldr	r2, [r4, #12]
+ 174 001a 9B1A     		subs	r3, r3, r2
+ 175 001c 6360     		str	r3, [r4, #4]
+  86:main.c        ****             Med_filter = Filter_1_AddValue(ADC_1_result);
+ 176              		.loc 1 86 0
+ 177 001e 6068     		ldr	r0, [r4, #4]
+ 178 0020 FFF7FEFF 		bl	LowPassFilter
+ 179              	.LVL12:
+ 180 0024 0546     		mov	r5, r0
+ 181              	.LVL13:
+  87:main.c        **** //            Vadc = ADC1_CountsTo_uVolts( ADC1_result );
+ 182              		.loc 1 87 0
+ 183 0026 6068     		ldr	r0, [r4, #4]
+ 184              	.LVL14:
+ 185 0028 FFF7FEFF 		bl	Filter_1_AddValue
+ 186              	.LVL15:
+ 187 002c 0246     		mov	r2, r0
+ 188 002e 114B     		ldr	r3, .L18+4
+ 189 0030 1860     		str	r0, [r3]
+  93:main.c        ****         }
+ 190              		.loc 1 93 0
+ 191 0032 6068     		ldr	r0, [r4, #4]
+ 192 0034 2946     		mov	r1, r5
+ 193 0036 FFF7FEFF 		bl	Chart_1_Plot
+ 194              	.LVL16:
+ 195              	.L13:
+ 196              	.LBE2:
+  97:main.c        ****         {
+ 197              		.loc 1 97 0
+ 198 003a 0F4B     		ldr	r3, .L18+8
+ 199 003c 1B68     		ldr	r3, [r3]
+ 200 003e 002B     		cmp	r3, #0
+ 201 0040 E1D0     		beq	.L14
+ 202              	.LBB3:
+  99:main.c        ****             Button_1_Pressed = 0;                           // clear flag
+ 203              		.loc 1 99 0
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 7
+
+
+ 204 0042 0D4B     		ldr	r3, .L18+8
+ 205 0044 1A68     		ldr	r2, [r3]
+ 206              	.LVL17:
+ 100:main.c        ****             
+ 207              		.loc 1 100 0
+ 208 0046 0021     		movs	r1, #0
+ 209 0048 1960     		str	r1, [r3]
+ 102:main.c        ****             {
+ 210              		.loc 1 102 0
+ 211 004a 12F0010F 		tst	r2, #1
+ 212 004e DAD0     		beq	.L14
+ 104:main.c        ****                 ADC_Offset += Med_filter; // tare: update offset to zero output 
+ 213              		.loc 1 104 0
+ 214 0050 0120     		movs	r0, #1
+ 215 0052 FFF7FEFF 		bl	Pin_LED_Write
+ 216              	.LVL18:
+ 217 0056 1E20     		movs	r0, #30
+ 218 0058 FFF7FEFF 		bl	CyDelayUs
+ 219              	.LVL19:
+ 220 005c 0020     		movs	r0, #0
+ 221 005e FFF7FEFF 		bl	Pin_LED_Write
+ 222              	.LVL20:
+ 105:main.c        ****             }    
+ 223              		.loc 1 105 0
+ 224 0062 034A     		ldr	r2, .L18
+ 225 0064 D168     		ldr	r1, [r2, #12]
+ 226 0066 034B     		ldr	r3, .L18+4
+ 227 0068 1B68     		ldr	r3, [r3]
+ 228 006a 0B44     		add	r3, r3, r1
+ 229 006c D360     		str	r3, [r2, #12]
+ 230 006e CAE7     		b	.L14
+ 231              	.L19:
+ 232              		.align	2
+ 233              	.L18:
+ 234 0070 00000000 		.word	.LANCHOR0
+ 235 0074 00000000 		.word	Med_filter
+ 236 0078 00000000 		.word	Button_1_Pressed
+ 237              	.LBE3:
+ 238              		.cfi_endproc
+ 239              	.LFE65:
+ 240              		.size	main, .-main
+ 241              		.global	ADC_Offset
+ 242              		.comm	Med_filter,4,4
+ 243              		.comm	Button_1_Pressed,4,4
+ 244              		.bss
+ 245              		.align	2
+ 246              		.set	.LANCHOR0,. + 0
+ 247              		.type	isrADC_flag, %object
+ 248              		.size	isrADC_flag, 1
+ 249              	isrADC_flag:
+ 250 0000 00       		.space	1
+ 251 0001 000000   		.space	3
+ 252              		.type	ADC_1_result, %object
+ 253              		.size	ADC_1_result, 4
+ 254              	ADC_1_result:
+ 255 0004 00000000 		.space	4
+ 256              		.type	Filter_Acc.5935, %object
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 8
+
+
+ 257              		.size	Filter_Acc.5935, 4
+ 258              	Filter_Acc.5935:
+ 259 0008 00000000 		.space	4
+ 260              		.type	ADC_Offset, %object
+ 261              		.size	ADC_Offset, 4
+ 262              	ADC_Offset:
+ 263 000c 00000000 		.space	4
+ 264              		.text
+ 265              	.Letext0:
+ 266              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.2\\psoc creator\\import\\gnu\\arm\\5.4.
+ 267              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.2\\psoc creator\\import\\gnu\\arm\\5.4.
+ 268              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
+ 269              		.file 5 "Generated_Source\\PSoC5/core_cm3.h"
+ 270              		.file 6 "Generated_Source\\PSoC5/Button_1.h"
+ 271              		.file 7 "Generated_Source\\PSoC5/ADC_1.h"
+ 272              		.file 8 "Generated_Source\\PSoC5/UART_1.h"
+ 273              		.file 9 "Generated_Source\\PSoC5/CyLib.h"
+ 274              		.file 10 "Generated_Source\\PSoC5/isrADC.h"
+ 275              		.file 11 "Generated_Source\\PSoC5/Filter_1.h"
+ 276              		.file 12 "Generated_Source\\PSoC5/Chart_1.h"
+ 277              		.file 13 "Generated_Source\\PSoC5/Pin_LED.h"
+ 278              		.section	.debug_info,"",%progbits
+ 279              	.Ldebug_info0:
+ 280 0000 2D030000 		.4byte	0x32d
+ 281 0004 0400     		.2byte	0x4
+ 282 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 283 000a 04       		.byte	0x4
+ 284 000b 01       		.uleb128 0x1
+ 285 000c D0000000 		.4byte	.LASF39
+ 286 0010 0C       		.byte	0xc
+ 287 0011 9A020000 		.4byte	.LASF40
+ 288 0015 64010000 		.4byte	.LASF41
+ 289 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 290 001d 00000000 		.4byte	0
+ 291 0021 00000000 		.4byte	.Ldebug_line0
+ 292 0025 02       		.uleb128 0x2
+ 293 0026 01       		.byte	0x1
+ 294 0027 06       		.byte	0x6
+ 295 0028 E6020000 		.4byte	.LASF0
+ 296 002c 02       		.uleb128 0x2
+ 297 002d 01       		.byte	0x1
+ 298 002e 08       		.byte	0x8
+ 299 002f C2000000 		.4byte	.LASF1
+ 300 0033 02       		.uleb128 0x2
+ 301 0034 02       		.byte	0x2
+ 302 0035 05       		.byte	0x5
+ 303 0036 C1020000 		.4byte	.LASF2
+ 304 003a 02       		.uleb128 0x2
+ 305 003b 02       		.byte	0x2
+ 306 003c 07       		.byte	0x7
+ 307 003d 24000000 		.4byte	.LASF3
+ 308 0041 03       		.uleb128 0x3
+ 309 0042 1A000000 		.4byte	.LASF9
+ 310 0046 02       		.byte	0x2
+ 311 0047 3F       		.byte	0x3f
+ 312 0048 4C000000 		.4byte	0x4c
+ 313 004c 02       		.uleb128 0x2
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 9
+
+
+ 314 004d 04       		.byte	0x4
+ 315 004e 05       		.byte	0x5
+ 316 004f D1020000 		.4byte	.LASF4
+ 317 0053 02       		.uleb128 0x2
+ 318 0054 04       		.byte	0x4
+ 319 0055 07       		.byte	0x7
+ 320 0056 E8010000 		.4byte	.LASF5
+ 321 005a 02       		.uleb128 0x2
+ 322 005b 08       		.byte	0x8
+ 323 005c 05       		.byte	0x5
+ 324 005d 8C020000 		.4byte	.LASF6
+ 325 0061 02       		.uleb128 0x2
+ 326 0062 08       		.byte	0x8
+ 327 0063 07       		.byte	0x7
+ 328 0064 3E020000 		.4byte	.LASF7
+ 329 0068 04       		.uleb128 0x4
+ 330 0069 04       		.byte	0x4
+ 331 006a 05       		.byte	0x5
+ 332 006b 696E7400 		.ascii	"int\000"
+ 333 006f 02       		.uleb128 0x2
+ 334 0070 04       		.byte	0x4
+ 335 0071 07       		.byte	0x7
+ 336 0072 23020000 		.4byte	.LASF8
+ 337 0076 03       		.uleb128 0x3
+ 338 0077 79000000 		.4byte	.LASF10
+ 339 007b 03       		.byte	0x3
+ 340 007c 2C       		.byte	0x2c
+ 341 007d 41000000 		.4byte	0x41
+ 342 0081 05       		.uleb128 0x5
+ 343 0082 CB020000 		.4byte	.LASF11
+ 344 0086 04       		.byte	0x4
+ 345 0087 9201     		.2byte	0x192
+ 346 0089 2C000000 		.4byte	0x2c
+ 347 008d 05       		.uleb128 0x5
+ 348 008e 1C020000 		.4byte	.LASF12
+ 349 0092 04       		.byte	0x4
+ 350 0093 9401     		.2byte	0x194
+ 351 0095 53000000 		.4byte	0x53
+ 352 0099 05       		.uleb128 0x5
+ 353 009a D0010000 		.4byte	.LASF13
+ 354 009e 04       		.byte	0x4
+ 355 009f 9701     		.2byte	0x197
+ 356 00a1 4C000000 		.4byte	0x4c
+ 357 00a5 02       		.uleb128 0x2
+ 358 00a6 04       		.byte	0x4
+ 359 00a7 04       		.byte	0x4
+ 360 00a8 A2000000 		.4byte	.LASF14
+ 361 00ac 02       		.uleb128 0x2
+ 362 00ad 08       		.byte	0x8
+ 363 00ae 04       		.byte	0x4
+ 364 00af 42000000 		.4byte	.LASF15
+ 365 00b3 02       		.uleb128 0x2
+ 366 00b4 01       		.byte	0x1
+ 367 00b5 08       		.byte	0x8
+ 368 00b6 A1020000 		.4byte	.LASF16
+ 369 00ba 06       		.uleb128 0x6
+ 370 00bb 81000000 		.4byte	0x81
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 10
+
+
+ 371 00bf 06       		.uleb128 0x6
+ 372 00c0 8D000000 		.4byte	0x8d
+ 373 00c4 02       		.uleb128 0x2
+ 374 00c5 08       		.byte	0x8
+ 375 00c6 04       		.byte	0x4
+ 376 00c7 DA020000 		.4byte	.LASF17
+ 377 00cb 02       		.uleb128 0x2
+ 378 00cc 04       		.byte	0x4
+ 379 00cd 07       		.byte	0x7
+ 380 00ce 83020000 		.4byte	.LASF18
+ 381 00d2 07       		.uleb128 0x7
+ 382 00d3 61000000 		.4byte	.LASF42
+ 383 00d7 01       		.byte	0x1
+ 384 00d8 20       		.byte	0x20
+ 385 00d9 00000000 		.4byte	.LFB63
+ 386 00dd 14000000 		.4byte	.LFE63-.LFB63
+ 387 00e1 01       		.uleb128 0x1
+ 388 00e2 9C       		.byte	0x9c
+ 389 00e3 F1000000 		.4byte	0xf1
+ 390 00e7 08       		.uleb128 0x8
+ 391 00e8 0C000000 		.4byte	.LVL0
+ 392 00ec B7020000 		.4byte	0x2b7
+ 393 00f0 00       		.byte	0
+ 394 00f1 09       		.uleb128 0x9
+ 395 00f2 D6010000 		.4byte	.LASF43
+ 396 00f6 01       		.byte	0x1
+ 397 00f7 38       		.byte	0x38
+ 398 00f8 00000000 		.4byte	.LFB64
+ 399 00fc 28000000 		.4byte	.LFE64-.LFB64
+ 400 0100 01       		.uleb128 0x1
+ 401 0101 9C       		.byte	0x9c
+ 402 0102 56010000 		.4byte	0x156
+ 403 0106 08       		.uleb128 0x8
+ 404 0107 08000000 		.4byte	.LVL1
+ 405 010b C2020000 		.4byte	0x2c2
+ 406 010f 0A       		.uleb128 0xa
+ 407 0110 0E000000 		.4byte	.LVL2
+ 408 0114 CD020000 		.4byte	0x2cd
+ 409 0118 23010000 		.4byte	0x123
+ 410 011c 0B       		.uleb128 0xb
+ 411 011d 01       		.uleb128 0x1
+ 412 011e 50       		.byte	0x50
+ 413 011f 02       		.uleb128 0x2
+ 414 0120 08       		.byte	0x8
+ 415 0121 64       		.byte	0x64
+ 416 0122 00       		.byte	0
+ 417 0123 08       		.uleb128 0x8
+ 418 0124 12000000 		.4byte	.LVL3
+ 419 0128 D8020000 		.4byte	0x2d8
+ 420 012c 08       		.uleb128 0x8
+ 421 012d 16000000 		.4byte	.LVL4
+ 422 0131 E3020000 		.4byte	0x2e3
+ 423 0135 0A       		.uleb128 0xa
+ 424 0136 1C000000 		.4byte	.LVL5
+ 425 013a EE020000 		.4byte	0x2ee
+ 426 013e 4C010000 		.4byte	0x14c
+ 427 0142 0B       		.uleb128 0xb
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 11
+
+
+ 428 0143 01       		.uleb128 0x1
+ 429 0144 50       		.byte	0x50
+ 430 0145 05       		.uleb128 0x5
+ 431 0146 03       		.byte	0x3
+ 432 0147 00000000 		.4byte	isrADC_InterruptHandler
+ 433 014b 00       		.byte	0
+ 434 014c 08       		.uleb128 0x8
+ 435 014d 20000000 		.4byte	.LVL6
+ 436 0151 F9020000 		.4byte	0x2f9
+ 437 0155 00       		.byte	0
+ 438 0156 0C       		.uleb128 0xc
+ 439 0157 B4000000 		.4byte	.LASF44
+ 440 015b 01       		.byte	0x1
+ 441 015c 77       		.byte	0x77
+ 442 015d 99000000 		.4byte	0x99
+ 443 0161 00000000 		.4byte	.LFB66
+ 444 0165 20000000 		.4byte	.LFE66-.LFB66
+ 445 0169 01       		.uleb128 0x1
+ 446 016a 9C       		.byte	0x9c
+ 447 016b 9D010000 		.4byte	0x19d
+ 448 016f 0D       		.uleb128 0xd
+ 449 0170 5E010000 		.4byte	.LASF45
+ 450 0174 01       		.byte	0x1
+ 451 0175 77       		.byte	0x77
+ 452 0176 99000000 		.4byte	0x99
+ 453 017a 00000000 		.4byte	.LLST0
+ 454 017e 0E       		.uleb128 0xe
+ 455 017f 6B020000 		.4byte	.LASF19
+ 456 0183 01       		.byte	0x1
+ 457 0184 79       		.byte	0x79
+ 458 0185 99000000 		.4byte	0x99
+ 459 0189 05       		.uleb128 0x5
+ 460 018a 03       		.byte	0x3
+ 461 018b 08000000 		.4byte	Filter_Acc.5935
+ 462 018f 0F       		.uleb128 0xf
+ 463 0190 6B00     		.ascii	"k\000"
+ 464 0192 01       		.byte	0x1
+ 465 0193 7B       		.byte	0x7b
+ 466 0194 99000000 		.4byte	0x99
+ 467 0198 32000000 		.4byte	.LLST1
+ 468 019c 00       		.byte	0
+ 469 019d 10       		.uleb128 0x10
+ 470 019e FA010000 		.4byte	.LASF46
+ 471 01a2 01       		.byte	0x1
+ 472 01a3 48       		.byte	0x48
+ 473 01a4 68000000 		.4byte	0x68
+ 474 01a8 00000000 		.4byte	.LFB65
+ 475 01ac 7C000000 		.4byte	.LFE65-.LFB65
+ 476 01b0 01       		.uleb128 0x1
+ 477 01b1 9C       		.byte	0x9c
+ 478 01b2 51020000 		.4byte	0x251
+ 479 01b6 11       		.uleb128 0x11
+ 480 01b7 10000000 		.4byte	.LBB2
+ 481 01bb 2A000000 		.4byte	.LBE2-.LBB2
+ 482 01bf F5010000 		.4byte	0x1f5
+ 483 01c3 12       		.uleb128 0x12
+ 484 01c4 60020000 		.4byte	.LASF20
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 12
+
+
+ 485 01c8 01       		.byte	0x1
+ 486 01c9 56       		.byte	0x56
+ 487 01ca 99000000 		.4byte	0x99
+ 488 01ce 57000000 		.4byte	.LLST2
+ 489 01d2 08       		.uleb128 0x8
+ 490 01d3 24000000 		.4byte	.LVL12
+ 491 01d7 56010000 		.4byte	0x156
+ 492 01db 08       		.uleb128 0x8
+ 493 01dc 2C000000 		.4byte	.LVL15
+ 494 01e0 04030000 		.4byte	0x304
+ 495 01e4 13       		.uleb128 0x13
+ 496 01e5 3A000000 		.4byte	.LVL16
+ 497 01e9 0F030000 		.4byte	0x30f
+ 498 01ed 0B       		.uleb128 0xb
+ 499 01ee 01       		.uleb128 0x1
+ 500 01ef 51       		.byte	0x51
+ 501 01f0 02       		.uleb128 0x2
+ 502 01f1 75       		.byte	0x75
+ 503 01f2 00       		.sleb128 0
+ 504 01f3 00       		.byte	0
+ 505 01f4 00       		.byte	0
+ 506 01f5 11       		.uleb128 0x11
+ 507 01f6 42000000 		.4byte	.LBB3
+ 508 01fa 3A000000 		.4byte	.LBE3-.LBB3
+ 509 01fe 47020000 		.4byte	0x247
+ 510 0202 12       		.uleb128 0x12
+ 511 0203 49000000 		.4byte	.LASF21
+ 512 0207 01       		.byte	0x1
+ 513 0208 63       		.byte	0x63
+ 514 0209 8D000000 		.4byte	0x8d
+ 515 020d 75000000 		.4byte	.LLST3
+ 516 0211 0A       		.uleb128 0xa
+ 517 0212 56000000 		.4byte	.LVL18
+ 518 0216 1A030000 		.4byte	0x31a
+ 519 021a 24020000 		.4byte	0x224
+ 520 021e 0B       		.uleb128 0xb
+ 521 021f 01       		.uleb128 0x1
+ 522 0220 50       		.byte	0x50
+ 523 0221 01       		.uleb128 0x1
+ 524 0222 31       		.byte	0x31
+ 525 0223 00       		.byte	0
+ 526 0224 0A       		.uleb128 0xa
+ 527 0225 5C000000 		.4byte	.LVL19
+ 528 0229 25030000 		.4byte	0x325
+ 529 022d 37020000 		.4byte	0x237
+ 530 0231 0B       		.uleb128 0xb
+ 531 0232 01       		.uleb128 0x1
+ 532 0233 50       		.byte	0x50
+ 533 0234 01       		.uleb128 0x1
+ 534 0235 4E       		.byte	0x4e
+ 535 0236 00       		.byte	0
+ 536 0237 13       		.uleb128 0x13
+ 537 0238 62000000 		.4byte	.LVL20
+ 538 023c 1A030000 		.4byte	0x31a
+ 539 0240 0B       		.uleb128 0xb
+ 540 0241 01       		.uleb128 0x1
+ 541 0242 50       		.byte	0x50
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 13
+
+
+ 542 0243 01       		.uleb128 0x1
+ 543 0244 30       		.byte	0x30
+ 544 0245 00       		.byte	0
+ 545 0246 00       		.byte	0
+ 546 0247 08       		.uleb128 0x8
+ 547 0248 06000000 		.4byte	.LVL11
+ 548 024c F1000000 		.4byte	0xf1
+ 549 0250 00       		.byte	0
+ 550 0251 0E       		.uleb128 0xe
+ 551 0252 A8000000 		.4byte	.LASF22
+ 552 0256 01       		.byte	0x1
+ 553 0257 1D       		.byte	0x1d
+ 554 0258 BA000000 		.4byte	0xba
+ 555 025c 05       		.uleb128 0x5
+ 556 025d 03       		.byte	0x3
+ 557 025e 00000000 		.4byte	isrADC_flag
+ 558 0262 0E       		.uleb128 0xe
+ 559 0263 0D000000 		.4byte	.LASF23
+ 560 0267 01       		.byte	0x1
+ 561 0268 1E       		.byte	0x1e
+ 562 0269 BF000000 		.4byte	0xbf
+ 563 026d 05       		.uleb128 0x5
+ 564 026e 03       		.byte	0x3
+ 565 026f 04000000 		.4byte	ADC_1_result
+ 566 0273 14       		.uleb128 0x14
+ 567 0274 DB010000 		.4byte	.LASF24
+ 568 0278 05       		.byte	0x5
+ 569 0279 9606     		.2byte	0x696
+ 570 027b 7F020000 		.4byte	0x27f
+ 571 027f 06       		.uleb128 0x6
+ 572 0280 76000000 		.4byte	0x76
+ 573 0284 15       		.uleb128 0x15
+ 574 0285 50000000 		.4byte	.LASF25
+ 575 0289 06       		.byte	0x6
+ 576 028a 59       		.byte	0x59
+ 577 028b BF000000 		.4byte	0xbf
+ 578 028f 05       		.uleb128 0x5
+ 579 0290 03       		.byte	0x3
+ 580 0291 00000000 		.4byte	Button_1_Pressed
+ 581 0295 15       		.uleb128 0x15
+ 582 0296 55020000 		.4byte	.LASF26
+ 583 029a 01       		.byte	0x1
+ 584 029b 2B       		.byte	0x2b
+ 585 029c 99000000 		.4byte	0x99
+ 586 02a0 05       		.uleb128 0x5
+ 587 02a1 03       		.byte	0x3
+ 588 02a2 00000000 		.4byte	Med_filter
+ 589 02a6 15       		.uleb128 0x15
+ 590 02a7 37000000 		.4byte	.LASF27
+ 591 02ab 01       		.byte	0x1
+ 592 02ac 2C       		.byte	0x2c
+ 593 02ad 99000000 		.4byte	0x99
+ 594 02b1 05       		.uleb128 0x5
+ 595 02b2 03       		.byte	0x3
+ 596 02b3 00000000 		.4byte	ADC_Offset
+ 597 02b7 16       		.uleb128 0x16
+ 598 02b8 BE010000 		.4byte	.LASF28
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 14
+
+
+ 599 02bc BE010000 		.4byte	.LASF28
+ 600 02c0 07       		.byte	0x7
+ 601 02c1 42       		.byte	0x42
+ 602 02c2 16       		.uleb128 0x16
+ 603 02c3 00000000 		.4byte	.LASF29
+ 604 02c7 00000000 		.4byte	.LASF29
+ 605 02cb 08       		.byte	0x8
+ 606 02cc 54       		.byte	0x54
+ 607 02cd 16       		.uleb128 0x16
+ 608 02ce F2020000 		.4byte	.LASF30
+ 609 02d2 F2020000 		.4byte	.LASF30
+ 610 02d6 09       		.byte	0x9
+ 611 02d7 76       		.byte	0x76
+ 612 02d8 16       		.uleb128 0x16
+ 613 02d9 81000000 		.4byte	.LASF31
+ 614 02dd 81000000 		.4byte	.LASF31
+ 615 02e1 06       		.byte	0x6
+ 616 02e2 6E       		.byte	0x6e
+ 617 02e3 16       		.uleb128 0x16
+ 618 02e4 A6020000 		.4byte	.LASF32
+ 619 02e8 A6020000 		.4byte	.LASF32
+ 620 02ec 07       		.byte	0x7
+ 621 02ed 3A       		.byte	0x3a
+ 622 02ee 16       		.uleb128 0x16
+ 623 02ef B2020000 		.4byte	.LASF33
+ 624 02f3 B2020000 		.4byte	.LASF33
+ 625 02f7 0A       		.byte	0xa
+ 626 02f8 18       		.byte	0x18
+ 627 02f9 16       		.uleb128 0x16
+ 628 02fa 09020000 		.4byte	.LASF34
+ 629 02fe 09020000 		.4byte	.LASF34
+ 630 0302 07       		.byte	0x7
+ 631 0303 3D       		.byte	0x3d
+ 632 0304 16       		.uleb128 0x16
+ 633 0305 90000000 		.4byte	.LASF35
+ 634 0309 90000000 		.4byte	.LASF35
+ 635 030d 0B       		.byte	0xb
+ 636 030e 3F       		.byte	0x3f
+ 637 030f 16       		.uleb128 0x16
+ 638 0310 76020000 		.4byte	.LASF36
+ 639 0314 76020000 		.4byte	.LASF36
+ 640 0318 0C       		.byte	0xc
+ 641 0319 4A       		.byte	0x4a
+ 642 031a 16       		.uleb128 0x16
+ 643 031b 30020000 		.4byte	.LASF37
+ 644 031f 30020000 		.4byte	.LASF37
+ 645 0323 0D       		.byte	0xd
+ 646 0324 26       		.byte	0x26
+ 647 0325 16       		.uleb128 0x16
+ 648 0326 FF010000 		.4byte	.LASF38
+ 649 032a FF010000 		.4byte	.LASF38
+ 650 032e 09       		.byte	0x9
+ 651 032f 77       		.byte	0x77
+ 652 0330 00       		.byte	0
+ 653              		.section	.debug_abbrev,"",%progbits
+ 654              	.Ldebug_abbrev0:
+ 655 0000 01       		.uleb128 0x1
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 15
+
+
+ 656 0001 11       		.uleb128 0x11
+ 657 0002 01       		.byte	0x1
+ 658 0003 25       		.uleb128 0x25
+ 659 0004 0E       		.uleb128 0xe
+ 660 0005 13       		.uleb128 0x13
+ 661 0006 0B       		.uleb128 0xb
+ 662 0007 03       		.uleb128 0x3
+ 663 0008 0E       		.uleb128 0xe
+ 664 0009 1B       		.uleb128 0x1b
+ 665 000a 0E       		.uleb128 0xe
+ 666 000b 55       		.uleb128 0x55
+ 667 000c 17       		.uleb128 0x17
+ 668 000d 11       		.uleb128 0x11
+ 669 000e 01       		.uleb128 0x1
+ 670 000f 10       		.uleb128 0x10
+ 671 0010 17       		.uleb128 0x17
+ 672 0011 00       		.byte	0
+ 673 0012 00       		.byte	0
+ 674 0013 02       		.uleb128 0x2
+ 675 0014 24       		.uleb128 0x24
+ 676 0015 00       		.byte	0
+ 677 0016 0B       		.uleb128 0xb
+ 678 0017 0B       		.uleb128 0xb
+ 679 0018 3E       		.uleb128 0x3e
+ 680 0019 0B       		.uleb128 0xb
+ 681 001a 03       		.uleb128 0x3
+ 682 001b 0E       		.uleb128 0xe
+ 683 001c 00       		.byte	0
+ 684 001d 00       		.byte	0
+ 685 001e 03       		.uleb128 0x3
+ 686 001f 16       		.uleb128 0x16
+ 687 0020 00       		.byte	0
+ 688 0021 03       		.uleb128 0x3
+ 689 0022 0E       		.uleb128 0xe
+ 690 0023 3A       		.uleb128 0x3a
+ 691 0024 0B       		.uleb128 0xb
+ 692 0025 3B       		.uleb128 0x3b
+ 693 0026 0B       		.uleb128 0xb
+ 694 0027 49       		.uleb128 0x49
+ 695 0028 13       		.uleb128 0x13
+ 696 0029 00       		.byte	0
+ 697 002a 00       		.byte	0
+ 698 002b 04       		.uleb128 0x4
+ 699 002c 24       		.uleb128 0x24
+ 700 002d 00       		.byte	0
+ 701 002e 0B       		.uleb128 0xb
+ 702 002f 0B       		.uleb128 0xb
+ 703 0030 3E       		.uleb128 0x3e
+ 704 0031 0B       		.uleb128 0xb
+ 705 0032 03       		.uleb128 0x3
+ 706 0033 08       		.uleb128 0x8
+ 707 0034 00       		.byte	0
+ 708 0035 00       		.byte	0
+ 709 0036 05       		.uleb128 0x5
+ 710 0037 16       		.uleb128 0x16
+ 711 0038 00       		.byte	0
+ 712 0039 03       		.uleb128 0x3
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 16
+
+
+ 713 003a 0E       		.uleb128 0xe
+ 714 003b 3A       		.uleb128 0x3a
+ 715 003c 0B       		.uleb128 0xb
+ 716 003d 3B       		.uleb128 0x3b
+ 717 003e 05       		.uleb128 0x5
+ 718 003f 49       		.uleb128 0x49
+ 719 0040 13       		.uleb128 0x13
+ 720 0041 00       		.byte	0
+ 721 0042 00       		.byte	0
+ 722 0043 06       		.uleb128 0x6
+ 723 0044 35       		.uleb128 0x35
+ 724 0045 00       		.byte	0
+ 725 0046 49       		.uleb128 0x49
+ 726 0047 13       		.uleb128 0x13
+ 727 0048 00       		.byte	0
+ 728 0049 00       		.byte	0
+ 729 004a 07       		.uleb128 0x7
+ 730 004b 2E       		.uleb128 0x2e
+ 731 004c 01       		.byte	0x1
+ 732 004d 3F       		.uleb128 0x3f
+ 733 004e 19       		.uleb128 0x19
+ 734 004f 03       		.uleb128 0x3
+ 735 0050 0E       		.uleb128 0xe
+ 736 0051 3A       		.uleb128 0x3a
+ 737 0052 0B       		.uleb128 0xb
+ 738 0053 3B       		.uleb128 0x3b
+ 739 0054 0B       		.uleb128 0xb
+ 740 0055 27       		.uleb128 0x27
+ 741 0056 19       		.uleb128 0x19
+ 742 0057 11       		.uleb128 0x11
+ 743 0058 01       		.uleb128 0x1
+ 744 0059 12       		.uleb128 0x12
+ 745 005a 06       		.uleb128 0x6
+ 746 005b 40       		.uleb128 0x40
+ 747 005c 18       		.uleb128 0x18
+ 748 005d 9742     		.uleb128 0x2117
+ 749 005f 19       		.uleb128 0x19
+ 750 0060 01       		.uleb128 0x1
+ 751 0061 13       		.uleb128 0x13
+ 752 0062 00       		.byte	0
+ 753 0063 00       		.byte	0
+ 754 0064 08       		.uleb128 0x8
+ 755 0065 898201   		.uleb128 0x4109
+ 756 0068 00       		.byte	0
+ 757 0069 11       		.uleb128 0x11
+ 758 006a 01       		.uleb128 0x1
+ 759 006b 31       		.uleb128 0x31
+ 760 006c 13       		.uleb128 0x13
+ 761 006d 00       		.byte	0
+ 762 006e 00       		.byte	0
+ 763 006f 09       		.uleb128 0x9
+ 764 0070 2E       		.uleb128 0x2e
+ 765 0071 01       		.byte	0x1
+ 766 0072 3F       		.uleb128 0x3f
+ 767 0073 19       		.uleb128 0x19
+ 768 0074 03       		.uleb128 0x3
+ 769 0075 0E       		.uleb128 0xe
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 17
+
+
+ 770 0076 3A       		.uleb128 0x3a
+ 771 0077 0B       		.uleb128 0xb
+ 772 0078 3B       		.uleb128 0x3b
+ 773 0079 0B       		.uleb128 0xb
+ 774 007a 11       		.uleb128 0x11
+ 775 007b 01       		.uleb128 0x1
+ 776 007c 12       		.uleb128 0x12
+ 777 007d 06       		.uleb128 0x6
+ 778 007e 40       		.uleb128 0x40
+ 779 007f 18       		.uleb128 0x18
+ 780 0080 9742     		.uleb128 0x2117
+ 781 0082 19       		.uleb128 0x19
+ 782 0083 01       		.uleb128 0x1
+ 783 0084 13       		.uleb128 0x13
+ 784 0085 00       		.byte	0
+ 785 0086 00       		.byte	0
+ 786 0087 0A       		.uleb128 0xa
+ 787 0088 898201   		.uleb128 0x4109
+ 788 008b 01       		.byte	0x1
+ 789 008c 11       		.uleb128 0x11
+ 790 008d 01       		.uleb128 0x1
+ 791 008e 31       		.uleb128 0x31
+ 792 008f 13       		.uleb128 0x13
+ 793 0090 01       		.uleb128 0x1
+ 794 0091 13       		.uleb128 0x13
+ 795 0092 00       		.byte	0
+ 796 0093 00       		.byte	0
+ 797 0094 0B       		.uleb128 0xb
+ 798 0095 8A8201   		.uleb128 0x410a
+ 799 0098 00       		.byte	0
+ 800 0099 02       		.uleb128 0x2
+ 801 009a 18       		.uleb128 0x18
+ 802 009b 9142     		.uleb128 0x2111
+ 803 009d 18       		.uleb128 0x18
+ 804 009e 00       		.byte	0
+ 805 009f 00       		.byte	0
+ 806 00a0 0C       		.uleb128 0xc
+ 807 00a1 2E       		.uleb128 0x2e
+ 808 00a2 01       		.byte	0x1
+ 809 00a3 3F       		.uleb128 0x3f
+ 810 00a4 19       		.uleb128 0x19
+ 811 00a5 03       		.uleb128 0x3
+ 812 00a6 0E       		.uleb128 0xe
+ 813 00a7 3A       		.uleb128 0x3a
+ 814 00a8 0B       		.uleb128 0xb
+ 815 00a9 3B       		.uleb128 0x3b
+ 816 00aa 0B       		.uleb128 0xb
+ 817 00ab 27       		.uleb128 0x27
+ 818 00ac 19       		.uleb128 0x19
+ 819 00ad 49       		.uleb128 0x49
+ 820 00ae 13       		.uleb128 0x13
+ 821 00af 11       		.uleb128 0x11
+ 822 00b0 01       		.uleb128 0x1
+ 823 00b1 12       		.uleb128 0x12
+ 824 00b2 06       		.uleb128 0x6
+ 825 00b3 40       		.uleb128 0x40
+ 826 00b4 18       		.uleb128 0x18
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 18
+
+
+ 827 00b5 9742     		.uleb128 0x2117
+ 828 00b7 19       		.uleb128 0x19
+ 829 00b8 01       		.uleb128 0x1
+ 830 00b9 13       		.uleb128 0x13
+ 831 00ba 00       		.byte	0
+ 832 00bb 00       		.byte	0
+ 833 00bc 0D       		.uleb128 0xd
+ 834 00bd 05       		.uleb128 0x5
+ 835 00be 00       		.byte	0
+ 836 00bf 03       		.uleb128 0x3
+ 837 00c0 0E       		.uleb128 0xe
+ 838 00c1 3A       		.uleb128 0x3a
+ 839 00c2 0B       		.uleb128 0xb
+ 840 00c3 3B       		.uleb128 0x3b
+ 841 00c4 0B       		.uleb128 0xb
+ 842 00c5 49       		.uleb128 0x49
+ 843 00c6 13       		.uleb128 0x13
+ 844 00c7 02       		.uleb128 0x2
+ 845 00c8 17       		.uleb128 0x17
+ 846 00c9 00       		.byte	0
+ 847 00ca 00       		.byte	0
+ 848 00cb 0E       		.uleb128 0xe
+ 849 00cc 34       		.uleb128 0x34
+ 850 00cd 00       		.byte	0
+ 851 00ce 03       		.uleb128 0x3
+ 852 00cf 0E       		.uleb128 0xe
+ 853 00d0 3A       		.uleb128 0x3a
+ 854 00d1 0B       		.uleb128 0xb
+ 855 00d2 3B       		.uleb128 0x3b
+ 856 00d3 0B       		.uleb128 0xb
+ 857 00d4 49       		.uleb128 0x49
+ 858 00d5 13       		.uleb128 0x13
+ 859 00d6 02       		.uleb128 0x2
+ 860 00d7 18       		.uleb128 0x18
+ 861 00d8 00       		.byte	0
+ 862 00d9 00       		.byte	0
+ 863 00da 0F       		.uleb128 0xf
+ 864 00db 34       		.uleb128 0x34
+ 865 00dc 00       		.byte	0
+ 866 00dd 03       		.uleb128 0x3
+ 867 00de 08       		.uleb128 0x8
+ 868 00df 3A       		.uleb128 0x3a
+ 869 00e0 0B       		.uleb128 0xb
+ 870 00e1 3B       		.uleb128 0x3b
+ 871 00e2 0B       		.uleb128 0xb
+ 872 00e3 49       		.uleb128 0x49
+ 873 00e4 13       		.uleb128 0x13
+ 874 00e5 02       		.uleb128 0x2
+ 875 00e6 17       		.uleb128 0x17
+ 876 00e7 00       		.byte	0
+ 877 00e8 00       		.byte	0
+ 878 00e9 10       		.uleb128 0x10
+ 879 00ea 2E       		.uleb128 0x2e
+ 880 00eb 01       		.byte	0x1
+ 881 00ec 3F       		.uleb128 0x3f
+ 882 00ed 19       		.uleb128 0x19
+ 883 00ee 03       		.uleb128 0x3
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 19
+
+
+ 884 00ef 0E       		.uleb128 0xe
+ 885 00f0 3A       		.uleb128 0x3a
+ 886 00f1 0B       		.uleb128 0xb
+ 887 00f2 3B       		.uleb128 0x3b
+ 888 00f3 0B       		.uleb128 0xb
+ 889 00f4 27       		.uleb128 0x27
+ 890 00f5 19       		.uleb128 0x19
+ 891 00f6 49       		.uleb128 0x49
+ 892 00f7 13       		.uleb128 0x13
+ 893 00f8 8701     		.uleb128 0x87
+ 894 00fa 19       		.uleb128 0x19
+ 895 00fb 11       		.uleb128 0x11
+ 896 00fc 01       		.uleb128 0x1
+ 897 00fd 12       		.uleb128 0x12
+ 898 00fe 06       		.uleb128 0x6
+ 899 00ff 40       		.uleb128 0x40
+ 900 0100 18       		.uleb128 0x18
+ 901 0101 9742     		.uleb128 0x2117
+ 902 0103 19       		.uleb128 0x19
+ 903 0104 01       		.uleb128 0x1
+ 904 0105 13       		.uleb128 0x13
+ 905 0106 00       		.byte	0
+ 906 0107 00       		.byte	0
+ 907 0108 11       		.uleb128 0x11
+ 908 0109 0B       		.uleb128 0xb
+ 909 010a 01       		.byte	0x1
+ 910 010b 11       		.uleb128 0x11
+ 911 010c 01       		.uleb128 0x1
+ 912 010d 12       		.uleb128 0x12
+ 913 010e 06       		.uleb128 0x6
+ 914 010f 01       		.uleb128 0x1
+ 915 0110 13       		.uleb128 0x13
+ 916 0111 00       		.byte	0
+ 917 0112 00       		.byte	0
+ 918 0113 12       		.uleb128 0x12
+ 919 0114 34       		.uleb128 0x34
+ 920 0115 00       		.byte	0
+ 921 0116 03       		.uleb128 0x3
+ 922 0117 0E       		.uleb128 0xe
+ 923 0118 3A       		.uleb128 0x3a
+ 924 0119 0B       		.uleb128 0xb
+ 925 011a 3B       		.uleb128 0x3b
+ 926 011b 0B       		.uleb128 0xb
+ 927 011c 49       		.uleb128 0x49
+ 928 011d 13       		.uleb128 0x13
+ 929 011e 02       		.uleb128 0x2
+ 930 011f 17       		.uleb128 0x17
+ 931 0120 00       		.byte	0
+ 932 0121 00       		.byte	0
+ 933 0122 13       		.uleb128 0x13
+ 934 0123 898201   		.uleb128 0x4109
+ 935 0126 01       		.byte	0x1
+ 936 0127 11       		.uleb128 0x11
+ 937 0128 01       		.uleb128 0x1
+ 938 0129 31       		.uleb128 0x31
+ 939 012a 13       		.uleb128 0x13
+ 940 012b 00       		.byte	0
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 20
+
+
+ 941 012c 00       		.byte	0
+ 942 012d 14       		.uleb128 0x14
+ 943 012e 34       		.uleb128 0x34
+ 944 012f 00       		.byte	0
+ 945 0130 03       		.uleb128 0x3
+ 946 0131 0E       		.uleb128 0xe
+ 947 0132 3A       		.uleb128 0x3a
+ 948 0133 0B       		.uleb128 0xb
+ 949 0134 3B       		.uleb128 0x3b
+ 950 0135 05       		.uleb128 0x5
+ 951 0136 49       		.uleb128 0x49
+ 952 0137 13       		.uleb128 0x13
+ 953 0138 3F       		.uleb128 0x3f
+ 954 0139 19       		.uleb128 0x19
+ 955 013a 3C       		.uleb128 0x3c
+ 956 013b 19       		.uleb128 0x19
+ 957 013c 00       		.byte	0
+ 958 013d 00       		.byte	0
+ 959 013e 15       		.uleb128 0x15
+ 960 013f 34       		.uleb128 0x34
+ 961 0140 00       		.byte	0
+ 962 0141 03       		.uleb128 0x3
+ 963 0142 0E       		.uleb128 0xe
+ 964 0143 3A       		.uleb128 0x3a
+ 965 0144 0B       		.uleb128 0xb
+ 966 0145 3B       		.uleb128 0x3b
+ 967 0146 0B       		.uleb128 0xb
+ 968 0147 49       		.uleb128 0x49
+ 969 0148 13       		.uleb128 0x13
+ 970 0149 3F       		.uleb128 0x3f
+ 971 014a 19       		.uleb128 0x19
+ 972 014b 02       		.uleb128 0x2
+ 973 014c 18       		.uleb128 0x18
+ 974 014d 00       		.byte	0
+ 975 014e 00       		.byte	0
+ 976 014f 16       		.uleb128 0x16
+ 977 0150 2E       		.uleb128 0x2e
+ 978 0151 00       		.byte	0
+ 979 0152 3F       		.uleb128 0x3f
+ 980 0153 19       		.uleb128 0x19
+ 981 0154 3C       		.uleb128 0x3c
+ 982 0155 19       		.uleb128 0x19
+ 983 0156 6E       		.uleb128 0x6e
+ 984 0157 0E       		.uleb128 0xe
+ 985 0158 03       		.uleb128 0x3
+ 986 0159 0E       		.uleb128 0xe
+ 987 015a 3A       		.uleb128 0x3a
+ 988 015b 0B       		.uleb128 0xb
+ 989 015c 3B       		.uleb128 0x3b
+ 990 015d 0B       		.uleb128 0xb
+ 991 015e 00       		.byte	0
+ 992 015f 00       		.byte	0
+ 993 0160 00       		.byte	0
+ 994              		.section	.debug_loc,"",%progbits
+ 995              	.Ldebug_loc0:
+ 996              	.LLST0:
+ 997 0000 00000000 		.4byte	.LVL7
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 21
+
+
+ 998 0004 00000000 		.4byte	.LVL7
+ 999 0008 0100     		.2byte	0x1
+ 1000 000a 50       		.byte	0x50
+ 1001 000b 00000000 		.4byte	.LVL7
+ 1002 000f 08000000 		.4byte	.LVL8
+ 1003 0013 0500     		.2byte	0x5
+ 1004 0015 70       		.byte	0x70
+ 1005 0016 00       		.sleb128 0
+ 1006 0017 38       		.byte	0x38
+ 1007 0018 24       		.byte	0x24
+ 1008 0019 9F       		.byte	0x9f
+ 1009 001a 08000000 		.4byte	.LVL8
+ 1010 001e 20000000 		.4byte	.LFE66
+ 1011 0022 0600     		.2byte	0x6
+ 1012 0024 F3       		.byte	0xf3
+ 1013 0025 01       		.uleb128 0x1
+ 1014 0026 50       		.byte	0x50
+ 1015 0027 38       		.byte	0x38
+ 1016 0028 24       		.byte	0x24
+ 1017 0029 9F       		.byte	0x9f
+ 1018 002a 00000000 		.4byte	0
+ 1019 002e 00000000 		.4byte	0
+ 1020              	.LLST1:
+ 1021 0032 14000000 		.4byte	.LVL9
+ 1022 0036 18000000 		.4byte	.LVL10
+ 1023 003a 0800     		.2byte	0x8
+ 1024 003c 70       		.byte	0x70
+ 1025 003d 00       		.sleb128 0
+ 1026 003e 38       		.byte	0x38
+ 1027 003f 26       		.byte	0x26
+ 1028 0040 73       		.byte	0x73
+ 1029 0041 00       		.sleb128 0
+ 1030 0042 22       		.byte	0x22
+ 1031 0043 9F       		.byte	0x9f
+ 1032 0044 18000000 		.4byte	.LVL10
+ 1033 0048 20000000 		.4byte	.LFE66
+ 1034 004c 0100     		.2byte	0x1
+ 1035 004e 50       		.byte	0x50
+ 1036 004f 00000000 		.4byte	0
+ 1037 0053 00000000 		.4byte	0
+ 1038              	.LLST2:
+ 1039 0057 26000000 		.4byte	.LVL13
+ 1040 005b 28000000 		.4byte	.LVL14
+ 1041 005f 0100     		.2byte	0x1
+ 1042 0061 50       		.byte	0x50
+ 1043 0062 28000000 		.4byte	.LVL14
+ 1044 0066 3A000000 		.4byte	.LVL16
+ 1045 006a 0100     		.2byte	0x1
+ 1046 006c 55       		.byte	0x55
+ 1047 006d 00000000 		.4byte	0
+ 1048 0071 00000000 		.4byte	0
+ 1049              	.LLST3:
+ 1050 0075 46000000 		.4byte	.LVL17
+ 1051 0079 55000000 		.4byte	.LVL18-1
+ 1052 007d 0100     		.2byte	0x1
+ 1053 007f 52       		.byte	0x52
+ 1054 0080 00000000 		.4byte	0
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 22
+
+
+ 1055 0084 00000000 		.4byte	0
+ 1056              		.section	.debug_aranges,"",%progbits
+ 1057 0000 34000000 		.4byte	0x34
+ 1058 0004 0200     		.2byte	0x2
+ 1059 0006 00000000 		.4byte	.Ldebug_info0
+ 1060 000a 04       		.byte	0x4
+ 1061 000b 00       		.byte	0
+ 1062 000c 0000     		.2byte	0
+ 1063 000e 0000     		.2byte	0
+ 1064 0010 00000000 		.4byte	.LFB63
+ 1065 0014 14000000 		.4byte	.LFE63-.LFB63
+ 1066 0018 00000000 		.4byte	.LFB64
+ 1067 001c 28000000 		.4byte	.LFE64-.LFB64
+ 1068 0020 00000000 		.4byte	.LFB66
+ 1069 0024 20000000 		.4byte	.LFE66-.LFB66
+ 1070 0028 00000000 		.4byte	.LFB65
+ 1071 002c 7C000000 		.4byte	.LFE65-.LFB65
+ 1072 0030 00000000 		.4byte	0
+ 1073 0034 00000000 		.4byte	0
+ 1074              		.section	.debug_ranges,"",%progbits
+ 1075              	.Ldebug_ranges0:
+ 1076 0000 00000000 		.4byte	.LFB63
+ 1077 0004 14000000 		.4byte	.LFE63
+ 1078 0008 00000000 		.4byte	.LFB64
+ 1079 000c 28000000 		.4byte	.LFE64
+ 1080 0010 00000000 		.4byte	.LFB66
+ 1081 0014 20000000 		.4byte	.LFE66
+ 1082 0018 00000000 		.4byte	.LFB65
+ 1083 001c 7C000000 		.4byte	.LFE65
+ 1084 0020 00000000 		.4byte	0
+ 1085 0024 00000000 		.4byte	0
+ 1086              		.section	.debug_line,"",%progbits
+ 1087              	.Ldebug_line0:
+ 1088 0000 0D020000 		.section	.debug_str,"MS",%progbits,1
+ 1088      0200B001 
+ 1088      00000201 
+ 1088      FB0E0D00 
+ 1088      01010101 
+ 1089              	.LASF29:
+ 1090 0000 55415254 		.ascii	"UART_1_Start\000"
+ 1090      5F315F53 
+ 1090      74617274 
+ 1090      00
+ 1091              	.LASF23:
+ 1092 000d 4144435F 		.ascii	"ADC_1_result\000"
+ 1092      315F7265 
+ 1092      73756C74 
+ 1092      00
+ 1093              	.LASF9:
+ 1094 001a 5F5F696E 		.ascii	"__int32_t\000"
+ 1094      7433325F 
+ 1094      7400
+ 1095              	.LASF3:
+ 1096 0024 73686F72 		.ascii	"short unsigned int\000"
+ 1096      7420756E 
+ 1096      7369676E 
+ 1096      65642069 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 23
+
+
+ 1096      6E7400
+ 1097              	.LASF27:
+ 1098 0037 4144435F 		.ascii	"ADC_Offset\000"
+ 1098      4F666673 
+ 1098      657400
+ 1099              	.LASF15:
+ 1100 0042 646F7562 		.ascii	"double\000"
+ 1100      6C6500
+ 1101              	.LASF21:
+ 1102 0049 73746174 		.ascii	"status\000"
+ 1102      757300
+ 1103              	.LASF25:
+ 1104 0050 42757474 		.ascii	"Button_1_Pressed\000"
+ 1104      6F6E5F31 
+ 1104      5F507265 
+ 1104      73736564 
+ 1104      00
+ 1105              	.LASF42:
+ 1106 0061 69737241 		.ascii	"isrADC_InterruptHandler\000"
+ 1106      44435F49 
+ 1106      6E746572 
+ 1106      72757074 
+ 1106      48616E64 
+ 1107              	.LASF10:
+ 1108 0079 696E7433 		.ascii	"int32_t\000"
+ 1108      325F7400 
+ 1109              	.LASF31:
+ 1110 0081 42757474 		.ascii	"Button_1_Start\000"
+ 1110      6F6E5F31 
+ 1110      5F537461 
+ 1110      727400
+ 1111              	.LASF35:
+ 1112 0090 46696C74 		.ascii	"Filter_1_AddValue\000"
+ 1112      65725F31 
+ 1112      5F416464 
+ 1112      56616C75 
+ 1112      6500
+ 1113              	.LASF14:
+ 1114 00a2 666C6F61 		.ascii	"float\000"
+ 1114      7400
+ 1115              	.LASF22:
+ 1116 00a8 69737241 		.ascii	"isrADC_flag\000"
+ 1116      44435F66 
+ 1116      6C616700 
+ 1117              	.LASF44:
+ 1118 00b4 4C6F7750 		.ascii	"LowPassFilter\000"
+ 1118      61737346 
+ 1118      696C7465 
+ 1118      7200
+ 1119              	.LASF1:
+ 1120 00c2 756E7369 		.ascii	"unsigned char\000"
+ 1120      676E6564 
+ 1120      20636861 
+ 1120      7200
+ 1121              	.LASF39:
+ 1122 00d0 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 1122      43313120 
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 24
+
+
+ 1122      352E342E 
+ 1122      31203230 
+ 1122      31363036 
+ 1123 0103 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 1123      20726576 
+ 1123      6973696F 
+ 1123      6E203233 
+ 1123      37373135 
+ 1124 0136 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 1124      66756E63 
+ 1124      74696F6E 
+ 1124      2D736563 
+ 1124      74696F6E 
+ 1125              	.LASF45:
+ 1126 015e 696E7075 		.ascii	"input\000"
+ 1126      7400
+ 1127              	.LASF41:
+ 1128 0164 433A5C55 		.ascii	"C:\\Users\\karth\\Downloads\\conductometry\\psoc-lo"
+ 1128      73657273 
+ 1128      5C6B6172 
+ 1128      74685C44 
+ 1128      6F776E6C 
+ 1129 0192 636B2D69 		.ascii	"ck-in-H2O-conductance\\Lock-in_H2O_02b.cydsn\000"
+ 1129      6E2D4832 
+ 1129      4F2D636F 
+ 1129      6E647563 
+ 1129      74616E63 
+ 1130              	.LASF28:
+ 1131 01be 4144435F 		.ascii	"ADC_1_GetResult32\000"
+ 1131      315F4765 
+ 1131      74526573 
+ 1131      756C7433 
+ 1131      3200
+ 1132              	.LASF13:
+ 1133 01d0 696E7433 		.ascii	"int32\000"
+ 1133      3200
+ 1134              	.LASF43:
+ 1135 01d6 496E6974 		.ascii	"Init\000"
+ 1135      00
+ 1136              	.LASF24:
+ 1137 01db 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 1137      52784275 
+ 1137      66666572 
+ 1137      00
+ 1138              	.LASF5:
+ 1139 01e8 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1139      20756E73 
+ 1139      69676E65 
+ 1139      6420696E 
+ 1139      7400
+ 1140              	.LASF46:
+ 1141 01fa 6D61696E 		.ascii	"main\000"
+ 1141      00
+ 1142              	.LASF38:
+ 1143 01ff 43794465 		.ascii	"CyDelayUs\000"
+ 1143      6C617955 
+ 1143      7300
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 25
+
+
+ 1144              	.LASF34:
+ 1145 0209 4144435F 		.ascii	"ADC_1_StartConvert\000"
+ 1145      315F5374 
+ 1145      61727443 
+ 1145      6F6E7665 
+ 1145      727400
+ 1146              	.LASF12:
+ 1147 021c 75696E74 		.ascii	"uint32\000"
+ 1147      333200
+ 1148              	.LASF8:
+ 1149 0223 756E7369 		.ascii	"unsigned int\000"
+ 1149      676E6564 
+ 1149      20696E74 
+ 1149      00
+ 1150              	.LASF37:
+ 1151 0230 50696E5F 		.ascii	"Pin_LED_Write\000"
+ 1151      4C45445F 
+ 1151      57726974 
+ 1151      6500
+ 1152              	.LASF7:
+ 1153 023e 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1153      206C6F6E 
+ 1153      6720756E 
+ 1153      7369676E 
+ 1153      65642069 
+ 1154              	.LASF26:
+ 1155 0255 4D65645F 		.ascii	"Med_filter\000"
+ 1155      66696C74 
+ 1155      657200
+ 1156              	.LASF20:
+ 1157 0260 4949525F 		.ascii	"IIR_filter\000"
+ 1157      66696C74 
+ 1157      657200
+ 1158              	.LASF19:
+ 1159 026b 46696C74 		.ascii	"Filter_Acc\000"
+ 1159      65725F41 
+ 1159      636300
+ 1160              	.LASF36:
+ 1161 0276 43686172 		.ascii	"Chart_1_Plot\000"
+ 1161      745F315F 
+ 1161      506C6F74 
+ 1161      00
+ 1162              	.LASF18:
+ 1163 0283 73697A65 		.ascii	"sizetype\000"
+ 1163      74797065 
+ 1163      00
+ 1164              	.LASF6:
+ 1165 028c 6C6F6E67 		.ascii	"long long int\000"
+ 1165      206C6F6E 
+ 1165      6720696E 
+ 1165      7400
+ 1166              	.LASF40:
+ 1167 029a 6D61696E 		.ascii	"main.c\000"
+ 1167      2E6300
+ 1168              	.LASF16:
+ 1169 02a1 63686172 		.ascii	"char\000"
+ 1169      00
+ARM GAS  C:\Users\karth\AppData\Local\Temp\cckEKglN.s 			page 26
+
+
+ 1170              	.LASF32:
+ 1171 02a6 4144435F 		.ascii	"ADC_1_Start\000"
+ 1171      315F5374 
+ 1171      61727400 
+ 1172              	.LASF33:
+ 1173 02b2 69737241 		.ascii	"isrADC_StartEx\000"
+ 1173      44435F53 
+ 1173      74617274 
+ 1173      457800
+ 1174              	.LASF2:
+ 1175 02c1 73686F72 		.ascii	"short int\000"
+ 1175      7420696E 
+ 1175      7400
+ 1176              	.LASF11:
+ 1177 02cb 75696E74 		.ascii	"uint8\000"
+ 1177      3800
+ 1178              	.LASF4:
+ 1179 02d1 6C6F6E67 		.ascii	"long int\000"
+ 1179      20696E74 
+ 1179      00
+ 1180              	.LASF17:
+ 1181 02da 6C6F6E67 		.ascii	"long double\000"
+ 1181      20646F75 
+ 1181      626C6500 
+ 1182              	.LASF0:
+ 1183 02e6 7369676E 		.ascii	"signed char\000"
+ 1183      65642063 
+ 1183      68617200 
+ 1184              	.LASF30:
+ 1185 02f2 43794465 		.ascii	"CyDelay\000"
+ 1185      6C617900 
+ 1186              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
